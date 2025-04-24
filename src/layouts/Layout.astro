@@ -1,14 +1,49 @@
+---
+import '../styles/global.css';
+import Navbar from '../components/Navbar.astro';
+
+interface Props {
+	title?: string;
+}
+
+const { title = "VitaSpoon" } = Astro.props;
+---
+
 <!doctype html>
-<html lang="en">
+<html lang="es" class="scroll-smooth">
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
+		<title>{title}</title>
+		<meta name="description" content="VitaSpoon - Tu generador de recetas personalizadas basado en tus preferencias, restricciones dietéticas e ingredientes disponibles." />
 	</head>
-	<body>
-		<slot />
+	<body class="min-h-screen bg-gray-50 flex flex-col">
+		<Navbar />
+		<main class="flex-grow">
+			<slot />
+		</main>
+		<footer class="bg-green-800 text-white py-6 sm:py-8 mt-auto">
+			<div class="container mx-auto px-4">
+				<div class="flex flex-col md:flex-row justify-between items-center">
+					<div class="mb-4 md:mb-0">
+						<h2 class="text-xl font-bold mb-2">VitaSpoon</h2>
+						<p class="text-green-100 text-sm">Tu generador de recetas personalizadas</p>
+					</div>
+					
+					<div class="flex flex-col sm:flex-row gap-3 sm:gap-6 text-center sm:text-left mb-4 md:mb-0">
+						<a href="/" class="text-green-200 hover:text-white transition-colors">Inicio</a>
+						<a href="/recetas" class="text-green-200 hover:text-white transition-colors">Recetas</a>
+						<a href="/mis-dietas" class="text-green-200 hover:text-white transition-colors">Mis Dietas</a>
+					</div>
+					
+					<div class="text-sm text-green-200">
+						&copy; {new Date().getFullYear()} VitaSpoon
+					</div>
+				</div>
+			</div>
+		</footer>
 	</body>
 </html>
 
@@ -18,5 +53,13 @@
 		margin: 0;
 		width: 100%;
 		height: 100%;
+		overflow-x: hidden;
+	}
+	
+	@media (pointer: coarse) {
+		.scroll-smooth {
+			scroll-behavior: smooth;
+			-webkit-overflow-scrolling: touch;
+		}
 	}
 </style>

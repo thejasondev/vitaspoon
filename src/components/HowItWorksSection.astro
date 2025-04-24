@@ -1,0 +1,121 @@
+---
+import Card from './Card.astro';
+---
+
+<section id="how-it-works" class="relative py-12 sm:py-16 overflow-hidden">
+  <!-- Fondos y decoraciones -->
+  <div class="absolute inset-0 bg-gradient-to-br from-emerald-50 to-green-100 opacity-70"></div>
+  <div class="absolute top-0 left-0 w-32 h-32 bg-emerald-300 rounded-full -translate-x-1/2 -translate-y-1/2 opacity-20"></div>
+  <div class="absolute bottom-0 right-0 w-40 h-40 bg-green-300 rounded-full translate-x-1/2 translate-y-1/2 opacity-30"></div>
+  
+  <div class="container mx-auto px-4 relative z-10">
+    <h2 class="text-2xl md:text-3xl font-bold text-center text-emerald-800 mb-2 md:mb-4">¿Cómo funciona VitaSpoon?</h2>
+    <p class="text-center text-emerald-700 mb-8 max-w-2xl mx-auto">Personaliza tus recetas en tres simples pasos para una alimentación a tu medida</p>
+    
+    <!-- Versión móvil: Tarjetas secuenciales modernas -->
+    <div class="md:hidden mobile-steps-container space-y-5">
+      <!-- Paso 1 -->
+      <div class="step-card bg-white rounded-xl shadow-md p-5 flex items-center">
+        <div class="step-number flex-shrink-0 w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center mr-4 font-bold text-xl">1</div>
+        <div>
+          <h3 class="font-semibold text-emerald-800 text-lg mb-1">Selecciona tus ingredientes</h3>
+          <p class="text-gray-600 text-sm">Escoge entre una amplia variedad de ingredientes frescos y saludables que tienes disponibles.</p>
+        </div>
+      </div>
+      
+      <!-- Conector visual -->
+      <div class="flex justify-center">
+        <div class="w-1 h-5 bg-emerald-300"></div>
+      </div>
+      
+      <!-- Paso 2 -->
+      <div class="step-card bg-white rounded-xl shadow-md p-5 flex items-center">
+        <div class="step-number flex-shrink-0 w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center mr-4 font-bold text-xl">2</div>
+        <div>
+          <h3 class="font-semibold text-emerald-800 text-lg mb-1">Define tus preferencias</h3>
+          <p class="text-gray-600 text-sm">Indica tus restricciones dietéticas, alergias o preferencias específicas para recetas personalizadas.</p>
+        </div>
+      </div>
+      
+      <!-- Conector visual -->
+      <div class="flex justify-center">
+        <div class="w-1 h-5 bg-emerald-300"></div>
+      </div>
+      
+      <!-- Paso 3 -->
+      <div class="step-card bg-white rounded-xl shadow-md p-5 flex items-center">
+        <div class="step-number flex-shrink-0 w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center mr-4 font-bold text-xl">3</div>
+        <div>
+          <h3 class="font-semibold text-emerald-800 text-lg mb-1">Recibe recetas personalizadas</h3>
+          <p class="text-gray-600 text-sm">Obtén recetas adaptadas a tus necesidades, con instrucciones paso a paso y valor nutricional.</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Versión desktop: Grid de 3 tarjetas -->
+    <div class="hidden md:grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-5xl mx-auto">
+      <Card 
+        number="1"
+        title="Selecciona tus ingredientes" 
+        description="Escoge entre una amplia variedad de ingredientes frescos y saludables que tienes disponibles o te gustaría utilizar."
+      />
+      
+      <Card 
+        number="2"
+        title="Define tus preferencias" 
+        description="Indica tus restricciones dietéticas, alergias o preferencias específicas para recetas personalizadas."
+      />
+      
+      <Card 
+        number="3"
+        title="Recibe recetas personalizadas" 
+        description="Obtén recetas adaptadas a tus necesidades, con instrucciones paso a paso y valor nutricional detallado."
+      />
+    </div>
+    
+    <div class="text-center mt-10 md:mt-12">
+      <a href="/recetas" class="inline-block bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg shadow transition-colors duration-300">
+        Probar ahora
+      </a>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Animación simple para las tarjetas en móvil
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.innerWidth < 768) {
+      const stepCards = document.querySelectorAll('.step-card');
+      
+      // Animación de entrada con pequeño retardo para cada tarjeta
+      stepCards.forEach((card, index) => {
+        setTimeout(() => {
+          card.classList.add('animate-fade-in');
+        }, 300 * index);
+      });
+    }
+  });
+</script>
+
+<style>
+  /* Animaciones para las tarjetas */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .step-card {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.5s ease;
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.6s forwards;
+  }
+  
+  .step-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  }
+</style> 

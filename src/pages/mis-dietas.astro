@@ -1,0 +1,17 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SavedRecipesPage from '../components/SavedRecipesPage';
+---
+
+<Layout title="Mis Dietas | VitaSpoon">
+  <main class="container mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold text-green-800 mb-6 text-center">
+      Mis Dietas
+    </h1>
+    <p class="text-lg text-gray-700 max-w-3xl mx-auto text-center mb-10">
+      Aquí encontrarás todas las recetas que has guardado para tu plan de alimentación personalizado.
+    </p>
+    
+    <SavedRecipesPage client:load />
+  </main>
+</Layout> 

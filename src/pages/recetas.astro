@@ -1,0 +1,18 @@
+---
+import Layout from '../layouts/Layout.astro';
+import RecipeFormPage from '../components/RecipeFormPage';
+---
+
+<Layout title="Recetas Personalizadas | VitaSpoon">
+  <main class="container mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold text-green-800 mb-6 text-center">
+      Recetas Personalizadas
+    </h1>
+    <p class="text-lg text-gray-700 max-w-3xl mx-auto text-center mb-10">
+      Crea recetas adaptadas a tus necesidades dietéticas, preferencias culinarias
+      y los ingredientes que tienes disponibles.
+    </p>
+    
+    <RecipeFormPage client:load />
+  </main>
+</Layout> 

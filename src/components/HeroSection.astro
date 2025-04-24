@@ -1,0 +1,58 @@
+---
+// No se necesita frontmatter por ahora, pero se deja por si se añade lógica
+---
+
+<section class="relative text-center lg:text-left overflow-hidden">
+  <!-- Fondo móvil: imagen con overlay -->
+  <div class="absolute inset-0 bg-black/20 md:hidden z-0"></div>
+  <div class="absolute inset-0 md:hidden z-[-1] bg-cover bg-center" style="background-image: url('/dieta-header.jpg');"></div>
+  
+  <!-- Fondo desktop: gradiente -->
+  <div class="absolute inset-0 hidden md:block bg-gradient-to-br from-green-100 via-emerald-50 to-white z-[-1]"></div>
+  
+  <!-- Elementos decorativos para móviles -->
+  <div class="absolute top-32 right-0 w-20 h-20 bg-green-100 rounded-full opacity-50 md:hidden z-0"></div>
+  <div class="absolute bottom-10 left-0 w-24 h-24 bg-emerald-100 rounded-full opacity-30 md:hidden z-0"></div>
+  
+  <!-- Contenido principal -->
+  <div class="container mx-auto px-4 py-16 md:py-20 z-10 relative">
+    <div class="lg:flex lg:items-center lg:justify-between">
+      <div class="lg:w-1/2 mb-10 lg:mb-0">
+        <!-- Área de texto con fondo semi-transparente en móvil -->
+        <div class="md:bg-transparent bg-white/80 backdrop-blur-sm py-6 px-4 md:p-0 rounded-xl md:rounded-none">
+          <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-green-800 mb-4 leading-tight">
+            Descubre <span class="text-emerald-600">Sabores Saludables</span> con VitaSpoon
+          </h1>
+          <p class="text-base sm:text-lg md:text-xl text-gray-700 md:text-gray-600 mb-6 md:mb-8 max-w-xl mx-auto lg:mx-0">
+            Tu asistente inteligente para crear deliciosas recetas personalizadas.
+            Adapta tus comidas a tus gustos, restricciones y los ingredientes que tienes en casa.
+          </p>
+          <a 
+            href="/recetas" 
+            class="inline-block bg-green-600 text-white text-base md:text-lg font-semibold py-2.5 sm:py-3 px-6 sm:px-8 rounded-lg shadow-md hover:bg-green-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300"
+          >
+            Explorar Recetas
+          </a>
+        </div>
+      </div>
+      
+      <!-- Versión desktop de la imagen (oculta en móviles) -->
+      <div class="hidden lg:block lg:w-1/2 relative">
+        <div class="relative overflow-hidden rounded-2xl shadow-2xl transform transition-transform duration-500 hover:scale-105">
+          <div class="absolute inset-0 bg-gradient-to-r from-green-200/30 to-emerald-300/30 mix-blend-overlay rounded-2xl"></div>
+          <img 
+            src="/dieta-header.jpg" 
+            alt="Ilustración de comida saludable" 
+            class="w-full h-auto object-cover"
+          />
+          <div class="absolute -bottom-1 -left-1 -right-1 h-16 bg-gradient-to-t from-white to-transparent"></div>
+        </div>
+        <!-- Elementos decorativos desktop -->
+        <div class="absolute -bottom-8 -right-8 w-32 h-32 bg-green-100 rounded-full opacity-70"></div>
+        <div class="absolute -top-8 -left-8 w-24 h-24 bg-emerald-100 rounded-full opacity-70"></div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="absolute bottom-0 left-0 w-full h-20 md:h-32 bg-gradient-to-t from-white to-transparent"></div>
+</section> 
