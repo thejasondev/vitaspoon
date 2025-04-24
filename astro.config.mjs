@@ -11,4 +11,7 @@ export default defineConfig({
     }),
     tailwind(),
   ],
+  vite: {
+    envPrefix: ["OPENAI_", "GEMINI_"],
+  },
 });

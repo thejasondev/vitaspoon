@@ -1,4 +1,5 @@
 import type { RecipeDisplayProps } from "../../types/recipe";
+import RecipeAttribution from "../RecipeAttribution";
 
 export default function RecipeDisplay({
   recipe,
@@ -91,7 +92,7 @@ export default function RecipeDisplay({
           <span className="font-medium">{recipe.difficultyLevel}</span>
         </div>
         <div className="text-center">
-          <span className="block text-sm text-gray-500">Tipo de cocina</span>
+          <span className="block text-sm text-gray-500">Tipo de comida</span>
           <span className="font-medium">{recipe.cuisineType || "Variada"}</span>
         </div>
         <div className="text-center">
@@ -187,6 +188,9 @@ export default function RecipeDisplay({
           Imprimir Receta
         </button>
       </div>
+
+      {/* Atribución de Spoonacular API */}
+      <RecipeAttribution />
     </div>
   );
 }
