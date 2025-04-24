@@ -1,0 +1,11 @@
+# www.robotstxt.org
+
+User-agent: *
+Allow: /
+
+# Block access to admin or private areas
+Disallow: /admin/
+Disallow: /private/
+
+# Sitemap location
+Sitemap: https://vitaspoon.com/sitemap.xml 

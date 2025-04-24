@@ -1,0 +1,21 @@
+---
+// FaqSchema.astro - Componente para añadir preguntas frecuentes con Schema.org
+import StructuredData from '../common/StructuredData.astro';
+
+interface FaqItem {
+  question: string;
+  answer: string;
+}
+
+interface Props {
+  questions: FaqItem[];
+}
+
+const { questions } = Astro.props;
+
+const faqData = {
+  questions
+};
+---
+
+<StructuredData type="FAQPage" data={faqData} /> 

@@ -1,11 +1,13 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { SavedRecipesPage } from '../components/pages';
+import DietasSection from '../components/sections/DietasSection.astro';
+// Eliminamos importaciones de componentes de receta y tipos no necesarios aquí
 ---
 
-<Layout title="Mis Dietas - VitaSpoon">
-	<main class="py-8 px-4 max-w-7xl mx-auto">
-		<h1 class="text-4xl font-bold text-center text-green-700 mb-8">Mis Dietas Guardadas</h1>
-		<SavedRecipesPage client:load />
-	</main>
+<Layout 
+  title="Mis Dietas Personalizadas | VitaSpoon"
+  description="Gestiona tus planes dietéticos personalizados según tus objetivos nutricionales, preferencias y restricciones alimentarias. Planes adaptados a tu estilo de vida."
+  image="/images/VitaSpoon.png"
+>
+<DietasSection />
 </Layout> 

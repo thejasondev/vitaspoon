@@ -1,0 +1,79 @@
+---
+// RecipeSchema.astro - Componente específico para recetas con Schema.org
+import StructuredData from '../common/StructuredData.astro';
+
+interface Props {
+  name: string;
+  description: string;
+  image: string;
+  ingredients: string[];
+  instructions: string[];
+  prepTime?: string;
+  cookTime?: string;
+  totalTime?: string;
+  recipeYield?: string;
+  category?: string;
+  cuisine?: string;
+  calories?: string;
+  fatContent?: string;
+  proteinContent?: string;
+  carbohydrateContent?: string;
+  keywords?: string;
+}
+
+const { 
+  name,
+  description,
+  image,
+  ingredients,
+  instructions,
+  prepTime = "PT20M",
+  cookTime = "PT30M",
+  totalTime = "PT50M",
+  recipeYield = "4 porciones",
+  category = "Plato principal",
+  cuisine = "Internacional",
+  calories = "",
+  fatContent = "",
+  proteinContent = "",
+  carbohydrateContent = "",
+  keywords = ""
+} = Astro.props;
+
+// Convertir las instrucciones de texto a objetos HowToStep para Schema.org
+const formattedInstructions = instructions.map((step, index) => ({
+  "@type": "HowToStep",
+  "name": `Paso ${index + 1}`,
+  "text": step,
+  "url": `${Astro.url.href}#step-${index + 1}`
+}));
+
+const recipeData = {
+  name,
+  image,
+  description,
+  keywords,
+  author: {
+    "@type": "Organization",
+    "name": "VitaSpoon"
+  },
+  datePublished: new Date().toISOString(),
+  recipeCategory: category,
+  recipeCuisine: cuisine,
+  recipeYield,
+  prepTime,
+  cookTime,
+  totalTime,
+  recipeIngredient: ingredients,
+  recipeInstructions: formattedInstructions,
+  nutrition: {
+    "@type": "NutritionInformation",
+    calories,
+    fatContent,
+    proteinContent,
+    carbohydrateContent
+  }
+};
+---
+
+<StructuredData type="Recipe" data={recipeData} /> 

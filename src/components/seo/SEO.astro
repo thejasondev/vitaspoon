@@ -1,0 +1,73 @@
+---
+// SEO.astro - Componente para configurar SEO en cualquier página
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  canonicalURL?: URL | string;
+  type?: 'website' | 'article';
+  publishedDate?: Date;
+  modifiedDate?: Date;
+  author?: string;
+  keywords?: string;
+}
+
+const {
+  title = "VitaSpoon | Tu asistente de cocina personalizado",
+  description = "VitaSpoon | Tu generador de recetas personalizadas basado en tus preferencias, restricciones dietéticas e ingredientes disponibles.",
+  image = "/images/VitaSpoon.png",
+  canonicalURL = Astro.url,
+  type = "website",
+  publishedDate,
+  modifiedDate,
+  author = "VitaSpoon",
+  keywords = "recetas personalizadas, asistente de cocina, dietas personalizadas, nutrición, comida saludable, alimentación, plan alimenticio"
+} = Astro.props;
+
+// Convertir canonicalURL a URL si es string
+const canonicalURLObj = typeof canonicalURL === 'string' 
+  ? new URL(canonicalURL, Astro.site) 
+  : canonicalURL;
+
+// Asegurar que la imagen es una URL absoluta
+const socialImageURL = new URL(image, Astro.site).toString();
+---
+
+<!-- Primary Meta Tags -->
+<title>{title}</title>
+<meta name="title" content={title} />
+<meta name="description" content={description} />
+<meta name="keywords" content={keywords} />
+<meta name="author" content={author} />
+
+<!-- Canonical URL -->
+<link rel="canonical" href={canonicalURLObj} />
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content={type} />
+<meta property="og:url" content={canonicalURLObj} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={socialImageURL} />
+<meta property="og:locale" content="es_ES" />
+<meta property="og:site_name" content="VitaSpoon" />
+
+<!-- Twitter -->
+<meta property="twitter:card" content="summary_large_image" />
+<meta property="twitter:url" content={canonicalURLObj} />
+<meta property="twitter:title" content={title} />
+<meta property="twitter:description" content={description} />
+<meta property="twitter:image" content={socialImageURL} />
+
+{publishedDate && (
+  <meta property="article:published_time" content={publishedDate.toISOString()} />
+)}
+
+{modifiedDate && (
+  <meta property="article:modified_time" content={modifiedDate.toISOString()} />
+  <meta property="og:updated_time" content={modifiedDate.toISOString()} />
+)}
+
+<!-- Language and locale -->
+<meta property="og:locale" content="es_ES" />
+<meta name="language" content="Spanish" /> 

@@ -26,7 +26,7 @@ export default function AllergySelector({
       <h3 className="text-lg font-semibold text-gray-800 mb-4">
         Alergias e intolerancias
       </h3>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-2">
         {ALLERGY_OPTIONS.map((allergy) => (
           <div
             key={allergy}

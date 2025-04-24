@@ -1,0 +1,89 @@
+---
+// StructuredData.astro - Componente para añadir datos estructurados JSON-LD 
+interface Props {
+  type: 'WebSite' | 'Organization' | 'FoodEstablishment' | 'Recipe' | 'FAQPage';
+  data: any;
+}
+
+const { type, data } = Astro.props;
+
+// Preparar el objeto JSON-LD según el tipo
+let jsonLD = {};
+
+switch (type) {
+  case 'WebSite':
+    jsonLD = {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: data.name || 'VitaSpoon',
+      url: data.url || 'https://vitaspoon.com',
+      description: data.description || 'Tu asistente de cocina personalizado',
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: {
+          '@type': 'EntryPoint',
+          urlTemplate: `${data.url || 'https://vitaspoon.com'}/buscar?q={search_term_string}`
+        },
+        'query-input': 'required name=search_term_string'
+      }
+    };
+    break;
+    
+  case 'Organization':
+    jsonLD = {
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: data.name || 'VitaSpoon',
+      url: data.url || 'https://vitaspoon.com',
+      logo: data.logo || 'https://vitaspoon.com/logo.png',
+      sameAs: data.socialProfiles || []
+    };
+    break;
+    
+  case 'Recipe':
+    jsonLD = {
+      '@context': 'https://schema.org',
+      '@type': 'Recipe',
+      name: data.name,
+      image: data.image,
+      description: data.description,
+      author: {
+        '@type': 'Organization',
+        name: 'VitaSpoon'
+      },
+      recipeCategory: data.category,
+      keywords: data.keywords,
+      recipeIngredient: data.ingredients,
+      recipeInstructions: data.instructions,
+      recipeCuisine: data.cuisine,
+      nutrition: {
+        '@type': 'NutritionInformation',
+        calories: data.calories,
+        fatContent: data.fatContent,
+        proteinContent: data.proteinContent,
+        carbohydrateContent: data.carbohydrateContent
+      }
+    };
+    break;
+    
+  case 'FAQPage':
+    jsonLD = {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: data.questions.map((q: any) => ({
+        '@type': 'Question',
+        name: q.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: q.answer
+        }
+      }))
+    };
+    break;
+    
+  default:
+    break;
+}
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(jsonLD)}></script> 

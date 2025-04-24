@@ -2,12 +2,41 @@
 import '../styles/global.css';
 import Navbar from '../components/common/Navbar.astro';
 import Footer from '../components/common/Footer.astro';
+import StructuredData from '../components/common/StructuredData.astro';
+import Analytics from '../components/seo/Analytics.astro';
 
 interface Props {
 	title?: string;
+	description?: string;
+	image?: string;
+	canonicalURL?: string;
 }
 
-const { title = "VitaSpoon" } = Astro.props;
+const { 
+	title = "VitaSpoon | Tu asistente de cocina personalizado", 
+	description = "VitaSpoon | Tu generador de recetas personalizadas basado en tus preferencias, restricciones dietéticas e ingredientes disponibles.",
+	image = "/images/VitaSpoon.png",
+	canonicalURL = new URL(Astro.url.pathname, Astro.site)
+} = Astro.props;
+
+// Datos para el esquema WebSite
+const websiteData = {
+	name: "VitaSpoon",
+	url: Astro.site?.toString() || "https://vitaspoon.com",
+	description: "Tu asistente de cocina personalizado con recetas adaptadas a tus necesidades"
+};
+
+// Datos para el esquema Organization
+const organizationData = {
+	name: "VitaSpoon",
+	url: Astro.site?.toString() || "https://vitaspoon.com",
+	logo: `${Astro.site}/images/VitaSpoon.png` || "https://vitaspoon.com/images/VitaSpoon.png",
+	socialProfiles: [
+		"https://facebook.com/vitaspoon",
+		"https://twitter.com/vitaspoon",
+		"https://instagram.com/vitaspoon"
+	]
+};
 ---
 
 <!doctype html>
@@ -15,10 +44,53 @@ const { title = "VitaSpoon" } = Astro.props;
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		
+		<!-- Favicons -->
+		<link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
+		<link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+		<link rel="manifest" href="/site.webmanifest">
+		<link rel="shortcut icon" href="/favicon.ico">
+		<meta name="msapplication-TileColor" content="#4ade80">
+		<meta name="msapplication-config" content="/browserconfig.xml">
+		<meta name="theme-color" content="#ffffff">
+		
+		<link rel="canonical" href={canonicalURL} />
 		<meta name="generator" content={Astro.generator} />
+		
+		<!-- Analytics and Site Verification -->
+		<Analytics />
+		
+		<!-- Primary Meta Tags -->
 		<title>{title}</title>
-		<meta name="description" content="VitaSpoon | Tu generador de recetas personalizadas basado en tus preferencias, restricciones dietéticas e ingredientes disponibles." />
+		<meta name="title" content={title} />
+		<meta name="description" content={description} />
+		<meta name="keywords" content="VitaSpoon, recetas personalizadas, asistente de cocina, dietas personalizadas, nutrición, comida saludable, alimentación, plan alimenticio, recetas saludables, cocina fácil" />
+		<meta name="author" content="VitaSpoon" />
+		<meta name="robots" content="index, follow" />
+		
+		<!-- Open Graph / Facebook -->
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content={canonicalURL} />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:image" content={image} />
+		<meta property="og:locale" content="es_ES" />
+		<meta property="og:site_name" content="VitaSpoon" />
+		
+		<!-- Twitter -->
+		<meta property="twitter:card" content="summary_large_image" />
+		<meta property="twitter:url" content={canonicalURL} />
+		<meta property="twitter:title" content={title} />
+		<meta property="twitter:description" content={description} />
+		<meta property="twitter:image" content={image} />
+		
+		<!-- Preconnect to important resources -->
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		
+		<!-- Structured Data -->
+		<StructuredData type="WebSite" data={websiteData} />
+		<StructuredData type="Organization" data={organizationData} />
 	</head>
 	<body class="min-h-screen bg-gray-50 flex flex-col">
 		<Navbar />

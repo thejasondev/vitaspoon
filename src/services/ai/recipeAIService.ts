@@ -13,6 +13,16 @@ const createRecipePrompt = (userInput: UserInput): string => {
     userInput.dietaryRestrictions;
   const ingredients = userInput.availableIngredients || [];
 
+  // Determinar el mensaje de electricidad según la selección
+  let electricityMessage = "";
+  if (electricityType === "Sin electricidad") {
+    electricityMessage =
+      "IMPORTANTE: La receta debe poderse preparar SIN ELECTRICIDAD. No incluyas pasos que requieran electrodomésticos como licuadora, batidora, horno eléctrico, microondas o refrigerador. Usa ÚNICAMENTE métodos de cocción que no requieran electricidad como fuego directo, parrilla a gas o preferiblemente carbón.";
+  } else {
+    electricityMessage =
+      "Puedes incluir cualquier método de cocción o electrodoméstico en la preparación.";
+  }
+
   // Construir prompt estructurado
   return `Crea una receta de cocina en español con estas características:
   
@@ -34,11 +44,7 @@ ${
     : ""
 }
 
-${
-  electricityType === "Sin electricidad"
-    ? "IMPORTANTE: La receta debe poderse preparar SIN ELECTRICIDAD. No incluyas pasos que requieran electrodomésticos como licuadora, batidora, horno eléctrico, microondas o refrigerador. Usa métodos de cocción que no requieran electricidad como fuego directo, parrilla a gas o carbón."
-    : ""
-}
+${electricityMessage}
 
 La respuesta debe estar en formato JSON con esta estructura exacta:
 {
@@ -94,7 +100,7 @@ export const generateRecipeWithAI = async (
           {
             role: "system",
             content:
-              "Eres un chef experto que crea recetas detalladas en español. Respondes solo en JSON.",
+              "Eres un chef experto que crea recetas detalladas en español. Adapta tus recetas según la disponibilidad de electricidad indicada por el usuario. Si no hay electricidad, NO incluyas pasos que requieran electrodomésticos (licuadora, horno eléctrico, microondas, etc.) y usa métodos como fuego directo, cocina a gas y carbón. Respondes exclusivamente en formato JSON puro sin delimitadores markdown como ```json o ```.",
           },
           {
             role: "user",
@@ -119,7 +125,21 @@ export const generateRecipeWithAI = async (
 
     // Intentar parsear la respuesta JSON
     try {
-      const recipeData = JSON.parse(recipeJSON);
+      // Extraer el JSON de la respuesta (puede venir envuelto en markdown o texto)
+      const jsonMatch =
+        recipeJSON.match(/```json\s*([\s\S]*?)\s*```/) ||
+        recipeJSON.match(/```\s*([\s\S]*?)\s*```/) ||
+        recipeJSON.match(/\{[\s\S]*\}/);
+
+      if (!jsonMatch) {
+        console.error("❌ No se encontró JSON en la respuesta");
+        console.log("Respuesta recibida:", recipeJSON);
+        throw new Error("Formato de respuesta no reconocido");
+      }
+
+      // Extraer el JSON de la respuesta (sea con delimitadores markdown o no)
+      const jsonString = jsonMatch[1] || jsonMatch[0];
+      const recipeData = JSON.parse(jsonString);
       console.log("✅ Receta generada:", recipeData.title);
 
       // Convertir al formato de nuestra aplicación

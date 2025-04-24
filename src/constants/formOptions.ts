@@ -2,14 +2,10 @@
  * Opciones de alergias disponibles
  */
 export const ALLERGY_OPTIONS = [
-  "Cacahuetes",
-  "Gluten",
   "Lácteos",
   "Huevo",
   "Mariscos",
   "Frutos secos",
-  "Soya",
-  "Trigo",
 ];
 
 /**
