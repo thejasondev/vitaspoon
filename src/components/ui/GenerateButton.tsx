@@ -1,4 +1,4 @@
-import type { GenerateButtonProps } from "../types/recipe";
+import type { GenerateButtonProps } from "../../types/recipe";
 
 export default function GenerateButton({
   onClick,

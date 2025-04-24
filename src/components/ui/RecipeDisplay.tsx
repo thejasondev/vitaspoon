@@ -1,4 +1,4 @@
-import type { RecipeDisplayProps } from "../types/recipe";
+import type { RecipeDisplayProps } from "../../types/recipe";
 
 export default function RecipeDisplay({
   recipe,
@@ -120,7 +120,7 @@ export default function RecipeDisplay({
         <ul className="list-none space-y-2">
           {recipe.ingredients.map((ingredient, index) => (
             <li key={index} className="flex items-start">
-              <span className="inline-block w-5 h-5 bg-green-100 text-green-800 rounded-full text-xs flex items-center justify-center mr-2 mt-1">
+              <span className="w-5 h-5 bg-green-100 text-green-800 rounded-full text-xs flex items-center justify-center mr-2 mt-1">
                 •
               </span>
               <span>

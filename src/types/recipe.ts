@@ -9,6 +9,7 @@ export interface UserInput {
     dietType: string;
     prepTime: string;
     difficultyLevel: string;
+    electricityType: string;
   };
   availableIngredients: string[];
 }

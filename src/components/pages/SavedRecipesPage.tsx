@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
-import type { Recipe, SavedRecipes } from "../types/recipe";
-import RecipeDisplay from "./RecipeDisplay";
-
-// Clave para el localStorage
-const SAVED_RECIPES_KEY = "vitaspoon_saved_recipes";
+import type { Recipe } from "../../types/recipe";
+import { RecipeDisplay } from "../ui";
+import { storageService } from "../../services/storage/storageService";
 
 export default function SavedRecipesPage() {
   const [savedRecipes, setSavedRecipes] = useState<Recipe[]>([]);
@@ -14,14 +12,11 @@ export default function SavedRecipesPage() {
   useEffect(() => {
     setIsLoading(true);
     try {
-      const savedRecipesJSON = localStorage.getItem(SAVED_RECIPES_KEY);
-      if (savedRecipesJSON) {
-        const savedRecipesData: SavedRecipes = JSON.parse(savedRecipesJSON);
-        setSavedRecipes(savedRecipesData.recipes);
-        // Seleccionar la primera receta si hay alguna
-        if (savedRecipesData.recipes.length > 0) {
-          setSelectedRecipe(savedRecipesData.recipes[0]);
-        }
+      const savedRecipesData = storageService.savedRecipes.get();
+      setSavedRecipes(savedRecipesData);
+      // Seleccionar la primera receta si hay alguna
+      if (savedRecipesData.length > 0) {
+        setSelectedRecipe(savedRecipesData[0]);
       }
     } catch (err) {
       console.error("Error cargando recetas guardadas:", err);
@@ -33,14 +28,8 @@ export default function SavedRecipesPage() {
   // Función para eliminar una receta guardada
   const handleDeleteRecipe = (recipeId: string) => {
     if (confirm("¿Estás seguro que deseas eliminar esta receta?")) {
-      const updatedRecipes = savedRecipes.filter(
-        (recipe) => recipe.id !== recipeId
-      );
+      const updatedRecipes = storageService.savedRecipes.remove(recipeId);
       setSavedRecipes(updatedRecipes);
-
-      // Actualizar localStorage
-      const savedRecipesData: SavedRecipes = { recipes: updatedRecipes };
-      localStorage.setItem(SAVED_RECIPES_KEY, JSON.stringify(savedRecipesData));
 
       // Si se elimina la receta seleccionada, seleccionar otra
       if (selectedRecipe && selectedRecipe.id === recipeId) {
