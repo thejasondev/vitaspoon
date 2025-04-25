@@ -100,7 +100,7 @@ export const generateRecipeWithAI = async (
           {
             role: "system",
             content:
-              "Eres un chef experto que crea recetas detalladas en español. Adapta tus recetas según la disponibilidad de electricidad indicada por el usuario. Si no hay electricidad, NO incluyas pasos que requieran electrodomésticos (licuadora, horno eléctrico, microondas, etc.) y usa métodos como fuego directo, cocina a gas y carbón. Respondes exclusivamente en formato JSON puro sin delimitadores markdown como ```json o ```.",
+              "Eres un chef experto que crea recetas detalladas en español. Adapta tus recetas según la disponibilidad de electricidad indicada por el usuario. Si no hay electricidad, NO incluyas pasos que requieran electrodomésticos (licuadora, horno eléctrico, microondas, fogones eléctricos, etc.) y usa métodos como parrilla con carbon o cocina a gas. Respondes exclusivamente en formato JSON puro sin delimitadores markdown como ```json o ```.",
           },
           {
             role: "user",
