@@ -2,7 +2,10 @@ import { useState, useEffect } from "react";
 import { RecipeForm } from "../forms";
 import { RecipeDisplay, GenerateButton } from "../ui";
 import type { Recipe, UserInput } from "../../types/recipe";
-import { storageService } from "../../services/storage/storageService";
+import {
+  storageService,
+  STORAGE_KEYS,
+} from "../../services/storage/storageService";
 import { generateRecipe } from "../../services/recipe/recipeService";
 
 export default function RecipeFormPage() {
@@ -76,7 +79,7 @@ export default function RecipeFormPage() {
     }
   };
 
-  // Función para guardar una receta en "Mis dietas"
+  // Función para guardar una receta en "Mis Recetas"
   const handleSaveRecipe = (recipeToSave: Recipe) => {
     // Usar el servicio para añadir la receta
     const updatedRecipes = storageService.savedRecipes.add(recipeToSave);
@@ -88,7 +91,17 @@ export default function RecipeFormPage() {
     }
 
     // Mostrar un mensaje de éxito
-    alert("¡Receta guardada en Mis Dietas!");
+    alert("¡Receta guardada en Mis Recetas!");
+  };
+
+  // Función para eliminar la receta actual
+  const handleDeleteRecipe = () => {
+    if (confirm("¿Estás seguro que deseas eliminar esta receta?")) {
+      // Eliminar la receta actual
+      setRecipe(null);
+      // Eliminar del localStorage
+      localStorage.removeItem(STORAGE_KEYS.CURRENT_RECIPE);
+    }
   };
 
   // Comprobar si la receta actual está guardada
@@ -101,10 +114,10 @@ export default function RecipeFormPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Columna del formulario */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="p-6 bg-gradient-to-br from-green-50 via-green-100 to-emerald-50">
-            <h2 className="text-2xl font-bold text-green-800 mb-4 flex items-center">
+          <div className="p-4 sm:p-6 bg-gradient-to-br from-green-50 via-green-100 to-emerald-50">
+            <h2 className="text-xl sm:text-2xl font-bold text-green-800 mb-3 sm:mb-4 flex items-center">
               <svg
-                className="w-6 h-6 mr-2"
+                className="w-5 h-5 sm:w-6 sm:h-6 mr-2"
                 fill="currentColor"
                 viewBox="0 0 20 20"
                 xmlns="http://www.w3.org/2000/svg"
@@ -118,23 +131,23 @@ export default function RecipeFormPage() {
               </svg>
               Personaliza tu receta
             </h2>
-            <p className="text-gray-700 ml-8">
+            <p className="text-gray-700 ml-7 sm:ml-8 text-sm sm:text-base">
               Selecciona tus preferencias para crear una receta adaptada a tus
               necesidades
             </p>
           </div>
 
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             <RecipeForm userInput={userInput} setUserInput={setUserInput} />
 
-            <div className="mt-8">
+            <div className="mt-6 sm:mt-8">
               <GenerateButton
                 onClick={handleGenerateRecipe}
                 isLoading={isLoading}
               />
 
               {error && (
-                <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-lg">
+                <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm sm:text-base">
                   {error}
                 </div>
               )}
@@ -146,17 +159,41 @@ export default function RecipeFormPage() {
         <div className={`${recipe || isLoading ? "block" : "hidden lg:block"}`}>
           <div className="sticky top-4">
             {isLoading || recipe ? (
-              <RecipeDisplay
-                recipe={recipe}
-                isLoading={isLoading}
-                onSaveRecipe={handleSaveRecipe}
-                isSaved={isCurrentRecipeSaved}
-              />
+              <div className="relative">
+                <RecipeDisplay
+                  recipe={recipe}
+                  isLoading={isLoading}
+                  onSaveRecipe={handleSaveRecipe}
+                  isSaved={isCurrentRecipeSaved}
+                />
+                {recipe && !isLoading && (
+                  <div className="absolute top-4 right-4 flex gap-2">
+                    <button
+                      onClick={handleDeleteRecipe}
+                      className="text-red-500 hover:text-red-700 bg-white bg-opacity-70 hover:bg-opacity-100 rounded-full p-2 transition-all"
+                      aria-label="Eliminar receta"
+                    >
+                      <svg
+                        className="w-5 h-5 sm:w-6 sm:h-6"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        ></path>
+                      </svg>
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
-              <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-                <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-green-50 to-emerald-100 rounded-full flex items-center justify-center">
+              <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8 text-center">
+                <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-4 sm:mb-6 bg-gradient-to-br from-green-50 to-emerald-100 rounded-full flex items-center justify-center">
                   <svg
-                    className="w-16 h-16 text-green-600"
+                    className="w-12 h-12 sm:w-16 sm:h-16 text-green-600"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -170,10 +207,10 @@ export default function RecipeFormPage() {
                     ></path>
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-3">
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2 sm:mb-3">
                   Tu receta aparecerá aquí
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-sm sm:text-base">
                   Completa el formulario con tus preferencias y haz clic en "¡A
                   Cocinar!" para generar una receta personalizada.
                 </p>
@@ -185,10 +222,10 @@ export default function RecipeFormPage() {
 
       {/* Contador de recetas guardadas */}
       {savedRecipes.length > 0 && (
-        <div className="mt-8 p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg text-center shadow-sm border border-green-200">
-          <p className="text-green-800 flex items-center justify-center">
+        <div className="mt-6 sm:mt-8 p-4 sm:p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg text-center shadow-sm border border-green-200">
+          <p className="text-green-800 flex items-center justify-center text-sm sm:text-base">
             <svg
-              className="w-5 h-5 mr-2"
+              className="w-4 h-4 sm:w-5 sm:h-5 mr-2"
               fill="currentColor"
               viewBox="0 0 20 20"
               xmlns="http://www.w3.org/2000/svg"
@@ -197,14 +234,14 @@ export default function RecipeFormPage() {
             </svg>
             Tienes <span className="font-bold mx-1">{savedRecipes.length}</span>{" "}
             receta{savedRecipes.length !== 1 ? "s" : ""} guardada
-            {savedRecipes.length !== 1 ? "s" : ""} en Mis Dietas
+            {savedRecipes.length !== 1 ? "s" : ""} en Mis Recetas
           </p>
           <a
-            href="/mis-dietas"
-            className="inline-flex items-center mt-3 px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm"
+            href="/mis-recetas"
+            className="inline-flex items-center mt-2 sm:mt-3 px-4 sm:px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm text-sm sm:text-base"
           >
             <svg
-              className="w-4 h-4 mr-2"
+              className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2"
               fill="currentColor"
               viewBox="0 0 20 20"
               xmlns="http://www.w3.org/2000/svg"
@@ -216,7 +253,7 @@ export default function RecipeFormPage() {
                 clipRule="evenodd"
               ></path>
             </svg>
-            Ver Mis Dietas
+            Ver Mis Recetas
           </a>
         </div>
       )}

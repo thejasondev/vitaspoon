@@ -87,14 +87,18 @@ const organizationData = {
 		<!-- Preconnect to important resources -->
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+		
+		<!-- Remixicon para iconos -->
+		<link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet" />
 		
 		<!-- Structured Data -->
 		<StructuredData type="WebSite" data={websiteData} />
 		<StructuredData type="Organization" data={organizationData} />
 	</head>
-	<body class="min-h-screen bg-gray-50 flex flex-col">
+	<body class="min-h-screen flex flex-col bg-gray-50">
 		<Navbar />
-		<main class="flex-grow">
+		<main class="flex-1">
 			<slot />
 		</main>
 		<Footer />

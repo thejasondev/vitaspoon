@@ -29,6 +29,7 @@ export interface Recipe {
   dietType: string;
   createdAt?: string;
   isSaved?: boolean;
+  source?: string;
 }
 
 export interface RecipeFormProps {

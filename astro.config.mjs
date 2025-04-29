@@ -6,7 +6,7 @@ import sitemap from "@astrojs/sitemap";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://vitaspoon.com",
+  site: "https://vitaspoon.vercel.app",
   integrations: [
     react({
       include: ["**/*.tsx", "**/*.jsx"], // Asegura que solo archivos React usen la configuración React
@@ -19,6 +19,6 @@ export default defineConfig({
     }),
   ],
   vite: {
-    envPrefix: ["OPENAI_", "GEMINI_"],
+    envPrefix: ["OPENAI_", "GEMINI_", "DEEPSEEK_"],
   },
 });

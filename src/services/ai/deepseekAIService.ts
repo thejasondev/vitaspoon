@@ -1,6 +1,7 @@
 import type { Recipe, UserInput } from "../../types/recipe";
 import { generateId } from "../storage/storageService";
 import { AI_API_CONFIG, API_MESSAGES } from "../../constants/apiConfig";
+import { generateLocalRecipe } from "../recipe/localRecipeService";
 
 /**
  * Configura el prompt para la generación de recetas
@@ -61,23 +62,25 @@ La respuesta debe estar en formato JSON con esta estructura exacta:
 };
 
 /**
- * Genera una receta utilizando OpenAI (GPT-4o-mini)
+ * Genera una receta utilizando OpenRouter API (sustituyendo DeepSeek)
  */
-export const generateRecipeWithAI = async (
+export const generateRecipeWithDeepSeek = async (
   userInput: UserInput
 ): Promise<Recipe> => {
   try {
     // Verificar si hay una API key configurada
-    const apiKey = import.meta.env.OPENAI_API_KEY;
+    const apiKey = import.meta.env.DEEPSEEK_API_KEY;
 
     if (!apiKey) {
       console.warn(
-        "⚠️ No se encontró API key para OpenAI, usando fallback local"
+        "⚠️ No se encontró API key para OpenRouter, usando fallback local"
       );
       return generateLocalRecipe(userInput);
     }
 
-    console.log("🔍 Generando receta con OpenAI...");
+    console.log("🔍 Generando receta con DeepSeek a través de OpenRouter...");
+    console.log("🔗 Usando endpoint:", AI_API_CONFIG.DEEPSEEK.API_URL);
+    console.log("🔧 Modelo: ", AI_API_CONFIG.DEEPSEEK.MODEL);
 
     // Crear el prompt para la IA
     const prompt = createRecipePrompt(userInput);
@@ -88,14 +91,16 @@ export const generateRecipeWithAI = async (
     console.log(`🔑 Usando API Key con prefijo: ${apiKeyPrefix}...`);
 
     // Configurar la solicitud
-    const response = await fetch(AI_API_CONFIG.OPENAI.API_URL, {
+    const response = await fetch(AI_API_CONFIG.DEEPSEEK.API_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
+        "HTTP-Referer": "https://vitaspoon.com", // Requerido por OpenRouter
+        "X-Title": "VitaSpoon Recipe Generator", // Recomendado por OpenRouter
       },
       body: JSON.stringify({
-        model: AI_API_CONFIG.OPENAI.MODEL,
+        model: "deepseek/deepseek-chat", // Modelo DeepSeek a través de OpenRouter
         messages: [
           {
             role: "system",
@@ -108,18 +113,23 @@ export const generateRecipeWithAI = async (
           },
         ],
         temperature: 0.7,
-        max_tokens: AI_API_CONFIG.OPENAI.MAX_TOKENS,
+        max_tokens: AI_API_CONFIG.DEEPSEEK.MAX_TOKENS,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`❌ Error de API OpenAI: ${response.status}`, errorText);
-      throw new Error(`Error de OpenAI API: ${response.status}`);
+      console.error(
+        `❌ Error de API OpenRouter: ${response.status}`,
+        errorText
+      );
+      throw new Error(
+        `Error de OpenRouter API: ${response.status} - ${errorText}`
+      );
     }
 
     const data = await response.json();
-    console.log("✅ Respuesta recibida de OpenAI");
+    console.log("✅ Respuesta recibida de DeepSeek a través de OpenRouter");
 
     const recipeJSON = data.choices[0].message.content;
 
@@ -154,7 +164,7 @@ export const generateRecipeWithAI = async (
         cuisineType: userInput.preferences.cuisineType,
         dietType: recipeData.dietType || userInput.preferences.dietType,
         createdAt: new Date().toISOString(),
-        source: "openai",
+        source: "deepseek", // DeepSeek a través de OpenRouter
       };
     } catch (parseError) {
       console.error("❌ Error al parsear respuesta JSON:", parseError);
@@ -162,86 +172,10 @@ export const generateRecipeWithAI = async (
       throw new Error("Error al procesar la respuesta de la IA");
     }
   } catch (error) {
-    console.error("❌ Error al generar receta con IA:", error);
-    return generateLocalRecipe(userInput);
+    console.error(
+      "❌ Error al generar receta con DeepSeek a través de OpenRouter:",
+      error
+    );
+    throw error; // Propagar el error para manejarlo en el nivel superior
   }
-};
-
-/**
- * Genera una receta local de respaldo cuando la IA no está disponible
- */
-const generateLocalRecipe = async (userInput: UserInput): Promise<Recipe> => {
-  console.log("🏠 Generando receta local (OpenAI fallback)");
-
-  // Extraer preferencias
-  const { cuisineType, dietType, electricityType } = userInput.preferences;
-  const sinElectricidad = electricityType === "Sin electricidad";
-
-  // Definir instrucciones según disponibilidad de electricidad
-  let title = `Receta de ${cuisineType}`;
-  let instructions = [];
-
-  if (sinElectricidad) {
-    // Recetas sin electricidad
-    if (cuisineType === "Desayuno") {
-      title = "Yogur con Frutas y Granola";
-      instructions = [
-        "Coloca el yogur en un recipiente.",
-        "Añade frutas frescas picadas por encima.",
-        "Espolvorea granola y un poco de miel.",
-        "Mezcla justo antes de consumir.",
-      ];
-    } else if (cuisineType === "Almuerzo" || cuisineType === "Cena") {
-      if (dietType === "Vegetariana" || dietType === "Vegana") {
-        title = "Wrap Vegetariano Frío";
-        instructions = [
-          "Extiende una tortilla sobre un plato.",
-          "Añade hummus o guacamole como base.",
-          "Coloca encima lechuga, tomate y zanahoria rallada.",
-          "Enrolla la tortilla y asegúrala con un palillo si es necesario.",
-        ];
-      } else {
-        title = "Sándwich de Jamón y Queso";
-        instructions = [
-          "Coloca pan de molde o baguette en un plato.",
-          "Añade una capa de mayonesa o mostaza.",
-          "Coloca lonchas de jamón y queso.",
-          "Añade lechuga y tomate si lo deseas.",
-          "Cubre con otra rebanada de pan y corta por la mitad.",
-        ];
-      }
-    } else {
-      title = "Frutas con Frutos Secos";
-      instructions = [
-        "Lava y trocea la fruta de temporada.",
-        "Mezcla diferentes tipos de frutos secos.",
-        "Combina ambos en un recipiente.",
-        "Añade un poco de miel o yogur si lo deseas.",
-      ];
-    }
-  } else {
-    // Recetas con electricidad
-    instructions = [
-      "Esta es una receta de respaldo generada localmente.",
-      "Para obtener recetas personalizadas, configura tu API key de OpenAI.",
-      "Consulta la documentación para más información.",
-    ];
-  }
-
-  // Implementación simple de respaldo
-  return {
-    id: generateId(),
-    title,
-    ingredients: [
-      { name: "ingrediente principal", quantity: "1", unit: "unidad" },
-      { name: "ingrediente secundario", quantity: "2", unit: "unidades" },
-      { name: "condimento", quantity: "1", unit: "cucharada" },
-    ],
-    instructions,
-    prepTime: userInput.preferences.prepTime,
-    difficultyLevel: userInput.preferences.difficultyLevel,
-    cuisineType: userInput.preferences.cuisineType,
-    dietType: userInput.preferences.dietType,
-    createdAt: new Date().toISOString(),
-  };
 };

@@ -17,6 +17,13 @@ export const AI_API_CONFIG = {
       "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
     MAX_TOKENS: 800,
   },
+
+  // DeepSeek API
+  DEEPSEEK: {
+    API_URL: "https://openrouter.ai/api/v1/chat/completions",
+    MODEL: "deepseek/deepseek-chat",
+    MAX_TOKENS: 800,
+  },
 };
 
 // Mensajes para el usuario

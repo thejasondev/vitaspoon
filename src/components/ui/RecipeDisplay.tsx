@@ -42,11 +42,43 @@ export default function RecipeDisplay({
     }
   };
 
+  // Verificar si la receta es local (por el título o alguna otra propiedad)
+  const isLocalRecipe =
+    recipe.title.includes("(Personalizada)") ||
+    recipe.title.includes("(Sin Electricidad)") ||
+    recipe.instructions.some((i) => i.includes("Nota:"));
+
   return (
     <div className="bg-white p-8 rounded-lg shadow-md">
       {/* Encabezado de la receta */}
       <div className="flex justify-between items-start mb-6 border-b-2 border-green-200 pb-2">
-        <h2 className="text-3xl font-bold text-green-700">{recipe.title}</h2>
+        <div>
+          <h2 className="text-3xl font-bold text-green-700">{recipe.title}</h2>
+
+          {/* Indicador de modo sin conexión */}
+          {isLocalRecipe && (
+            <div className="mt-1 flex items-center">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mr-2">
+                <svg
+                  className="w-3 h-3 mr-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"
+                  ></path>
+                </svg>
+                Modo sin conexión
+              </span>
+            </div>
+          )}
+        </div>
+
         {onSaveRecipe && (
           <button
             onClick={handleSaveRecipe}
@@ -155,11 +187,38 @@ export default function RecipeDisplay({
         </h3>
         <ol className="list-decimal list-inside space-y-4 pl-4">
           {recipe.instructions.map((instruction, index) => (
-            <li key={index} className="text-gray-700">
-              <span className="font-medium text-gray-900 mr-2">
-                Paso {index + 1}:
-              </span>{" "}
-              {instruction}
+            <li
+              key={index}
+              className={`text-gray-700 ${
+                instruction.includes("Nota:")
+                  ? "mt-6 font-medium text-blue-700 bg-blue-50 p-3 rounded-lg border border-blue-200 list-none"
+                  : ""
+              }`}
+            >
+              {instruction.includes("Nota:") ? (
+                <div className="flex">
+                  <svg
+                    className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <span>{instruction}</span>
+                </div>
+              ) : (
+                <>
+                  <span className="font-medium text-gray-900 mr-2">
+                    Paso {index + 1}:
+                  </span>{" "}
+                  {instruction}
+                </>
+              )}
             </li>
           ))}
         </ol>
@@ -189,8 +248,14 @@ export default function RecipeDisplay({
         </button>
       </div>
 
-      {/* Atribución de Spoonacular API */}
-      <RecipeAttribution />
+      {/* Atribución */}
+      {isLocalRecipe ? (
+        <div className="mt-6 text-center text-xs text-gray-500">
+          <p>Receta generada localmente - VitaSpoon</p>
+        </div>
+      ) : (
+        <RecipeAttribution />
+      )}
     </div>
   );
 }

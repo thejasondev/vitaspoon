@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface IngredientManagerProps {
   ingredients: string[];
@@ -15,12 +15,33 @@ export default function IngredientManager({
   onRemoveIngredient,
 }: IngredientManagerProps) {
   const [ingredientInput, setIngredientInput] = useState("");
+  const [isMobile, setIsMobile] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Detectar si es un dispositivo móvil basado en el ancho de la pantalla
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth <= 640);
+    };
+
+    // Verificar al cargar y cuando cambie el tamaño de la ventana
+    checkIfMobile();
+    window.addEventListener("resize", checkIfMobile);
+
+    return () => {
+      window.removeEventListener("resize", checkIfMobile);
+    };
+  }, []);
 
   // Manejar la adición de un ingrediente
   const handleAddIngredient = () => {
     if (ingredientInput.trim()) {
       onAddIngredient(ingredientInput.trim());
       setIngredientInput("");
+      // Enfocar el input después de añadir
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
     }
   };
 
@@ -35,22 +56,76 @@ export default function IngredientManager({
   return (
     <div className="bg-white p-4 rounded-lg border border-green-100">
       {/* Input para añadir ingredientes */}
-      <div className="flex space-x-2 mb-4">
-        <input
-          type="text"
-          value={ingredientInput}
-          onChange={(e) => setIngredientInput(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="Añade un ingrediente..."
-          className="flex-1 p-3 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 shadow-sm"
-        />
-        <button
-          type="button"
-          onClick={handleAddIngredient}
-          className="bg-green-600 text-white px-5 py-3 rounded-md hover:bg-green-700 transition-colors shadow-sm font-medium"
-        >
-          Añadir
-        </button>
+      <div
+        className={`flex ${isMobile ? "flex-col" : "flex-row space-x-2"} mb-4`}
+      >
+        <div className={`relative flex-1 ${isMobile ? "mb-2" : ""}`}>
+          <input
+            ref={inputRef}
+            type="text"
+            value={ingredientInput}
+            onChange={(e) => setIngredientInput(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Añade un ingrediente..."
+            className="w-full p-3 pl-4 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 shadow-sm transition-all"
+          />
+          {isMobile && ingredientInput.trim() && (
+            <button
+              type="button"
+              onClick={handleAddIngredient}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-green-600 text-white p-1.5 rounded-full hover:bg-green-700 transition-all shadow-sm"
+              aria-label="Añadir ingrediente"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                ></path>
+              </svg>
+            </button>
+          )}
+        </div>
+        {!isMobile ? (
+          <button
+            type="button"
+            onClick={handleAddIngredient}
+            className="bg-green-600 text-white px-5 py-3 rounded-md hover:bg-green-700 transition-colors shadow-sm font-medium flex-shrink-0"
+          >
+            Añadir
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={handleAddIngredient}
+            className={`bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-4 rounded-lg hover:from-green-600 hover:to-green-700 transition-all shadow-md font-medium flex items-center justify-center ${
+              !ingredientInput.trim() ? "" : "hidden"
+            }`}
+          >
+            <svg
+              className="w-5 h-5 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              ></path>
+            </svg>
+            Añadir ingrediente
+          </button>
+        )}
       </div>
 
       {/* Lista de ingredientes */}

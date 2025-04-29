@@ -85,11 +85,13 @@ function parseRecipeFromText(recipeText: string, userInput: UserInput): Recipe {
     title: recipeData.title,
     ingredients: recipeData.ingredients || [],
     instructions: recipeData.instructions || [],
-    prepTime: recipeData.prepTime || 30,
-    difficultyLevel: recipeData.difficultyLevel || "Media",
-    cuisineType: userInput.preferences.cuisineType, // Usar el valor del formulario
-    dietType: recipeData.dietType || "Regular",
+    prepTime: recipeData.prepTime || userInput.preferences.prepTime,
+    difficultyLevel:
+      recipeData.difficultyLevel || userInput.preferences.difficultyLevel,
+    cuisineType: userInput.preferences.cuisineType,
+    dietType: recipeData.dietType || userInput.preferences.dietType,
     createdAt: new Date().toISOString(),
+    source: "gemini",
   };
 }
 

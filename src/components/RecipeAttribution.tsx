@@ -4,12 +4,21 @@ import { API_MESSAGES } from "../constants/apiConfig";
 /**
  * Componente para mostrar la atribución requerida por los servicios de IA
  */
-const RecipeAttribution: React.FC = () => {
+export default function RecipeAttribution() {
   return (
-    <div className="text-xs text-gray-500 mt-4 text-center italic">
-      <p>{API_MESSAGES.ATTRIBUTION}</p>
+    <div className="mt-6 text-center text-xs text-gray-500">
+      <p>Receta generada con inteligencia artificial - VitaSpoon</p>
     </div>
   );
-};
+}
 
-export default RecipeAttribution;
+export function LocalRecipeAttribution() {
+  return (
+    <div className="mt-6 text-center text-xs text-gray-500">
+      <p>Receta generada localmente - VitaSpoon</p>
+      <p className="mt-1">
+        Modo sin conexión activo para regiones con restricciones
+      </p>
+    </div>
+  );
+}
