@@ -14,14 +14,16 @@ export interface UserInput {
   availableIngredients: string[];
 }
 
+export interface Ingredient {
+  name: string;
+  quantity: string;
+  unit: string;
+}
+
 export interface Recipe {
   id?: string;
   title: string;
-  ingredients: {
-    name: string;
-    quantity: string;
-    unit: string;
-  }[];
+  ingredients: Ingredient[];
   instructions: string[];
   prepTime: string;
   difficultyLevel: string;

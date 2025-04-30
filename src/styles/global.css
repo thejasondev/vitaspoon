@@ -7,3 +7,185 @@ body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 }
+
+/* Estilos para impresión de recetas utilizando clases personalizadas y variables */
+:root {
+  --print-spacing-sm: 2px;
+  --print-spacing-md: 6px;
+  --print-spacing-lg: 10px;
+  --print-font-xs: 7px;
+  --print-font-sm: 9px;
+  --print-font-md: 10px;
+  --print-font-lg: 12px;
+  --print-font-xl: 16px;
+  --print-color-border: #ddd;
+}
+
+@media print {
+  /* Reset y configuración básica */
+  body *,
+  * {
+    visibility: hidden;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+  .recipe-container,
+  .recipe-container * {
+    visibility: visible;
+  }
+
+  /* Contenedor principal */
+  .recipe-container {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 5mm !important;
+    box-shadow: none !important;
+    background-color: white !important;
+    transform-origin: top left !important;
+  }
+
+  /* Ocultar elementos no necesarios */
+  .print\:hidden,
+  .no-print,
+  button,
+  .bg-blue-100,
+  svg,
+  nav,
+  header,
+  footer {
+    display: none !important;
+  }
+
+  /* Layout y estructura */
+  .print-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    max-height: 99vh !important;
+  }
+
+  .print-header {
+    margin: 0 0 var(--print-spacing-md) 0 !important;
+    padding-bottom: var(--print-spacing-sm) !important;
+    border-bottom: 1px solid var(--print-color-border) !important;
+  }
+
+  .print-content {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: var(--print-spacing-md) !important;
+    flex: 1 !important;
+  }
+
+  .print-ingredients {
+    width: 30% !important;
+    border-right: 1px dashed var(--print-color-border) !important;
+    padding-right: var(--print-spacing-lg) !important;
+    margin: 0 !important;
+  }
+
+  .print-instructions {
+    width: 70% !important;
+    margin: 0 !important;
+    padding-left: var(--print-spacing-sm) !important;
+  }
+
+  /* Tipografía */
+  h2 {
+    font-size: var(--print-font-xl) !important;
+    color: black !important;
+    margin: 0 0 var(--print-spacing-md) 0 !important;
+    text-align: center !important;
+    font-weight: bold !important;
+    page-break-after: avoid;
+  }
+
+  h3 {
+    font-size: var(--print-font-lg) !important;
+    color: black !important;
+    margin: 0 0 var(--print-spacing-md) 0 !important;
+    page-break-after: avoid;
+    border-bottom: 1px solid var(--print-color-border) !important;
+    padding-bottom: var(--print-spacing-sm) !important;
+    font-weight: bold !important;
+  }
+
+  /* Listas */
+  ul {
+    list-style-type: disc !important;
+    padding-left: 12px !important;
+    margin: 0 0 3px 0 !important;
+  }
+  ol {
+    padding-left: 12px !important;
+    margin: 0 !important;
+  }
+  li {
+    margin-bottom: var(--print-spacing-sm) !important;
+    font-size: var(--print-font-md) !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Información de receta */
+  .recipe-info {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: space-between !important;
+    margin: 0 0 var(--print-spacing-md) 0 !important;
+    padding: var(--print-spacing-sm) 0 var(--print-spacing-sm) 0 !important;
+    border-bottom: 1px solid #eee !important;
+    font-size: var(--print-font-sm) !important;
+  }
+
+  .recipe-info > div {
+    width: auto !important;
+    margin: 0 8px 0 0 !important;
+    padding: 0 !important;
+  }
+  .recipe-info span {
+    font-size: var(--print-font-sm) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.1 !important;
+  }
+
+  .recipe-ingredients span,
+  .recipe-instructions span,
+  .recipe-info span {
+    font-size: var(--print-font-md) !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Elementos especiales */
+  .note-item {
+    font-style: italic !important;
+    border: none !important;
+    padding: var(--print-spacing-sm) !important;
+    margin-top: var(--print-spacing-sm) !important;
+    font-size: var(--print-font-sm) !important;
+  }
+
+  .print-footer {
+    margin-top: var(--print-spacing-md) !important;
+    padding-top: var(--print-spacing-sm) !important;
+    border-top: 1px solid #eee !important;
+    font-size: var(--print-font-xs) !important;
+    color: #777 !important;
+    text-align: center !important;
+  }
+
+  .font-medium {
+    font-weight: normal !important;
+  }
+
+  /* Configuración de página */
+  @page {
+    margin: 0 !important;
+    size: portrait !important;
+  }
+}
