@@ -60,6 +60,56 @@ const CUISINE_TYPE_INSTRUCTIONS: Record<string, string[]> = {
 };
 
 /**
+ * Instrucciones específicas para cocina sin electricidad usando parrilla de carbón
+ */
+const GRILL_INSTRUCTIONS: Record<string, string[]> = {
+  General: [
+    "Prepara la parrilla de carbón: coloca los carbones en una pirámide y enciéndelos.",
+    "Espera hasta que los carbones estén cubiertos de ceniza blanca (aproximadamente 20-30 minutos).",
+    "Distribuye los carbones de manera uniforme para tener zonas de calor directo e indirecto.",
+    "Coloca la rejilla y limpiala con un cepillo de alambre.",
+    "Deja que la rejilla se caliente durante 5 minutos antes de cocinar.",
+  ],
+  Proteína: [
+    "Sazona la proteína con sal, pimienta y especias al gusto.",
+    "Coloca la carne sobre la zona de calor directo para sellarla (2-3 minutos por lado).",
+    "Mueve la carne a la zona de calor indirecto para terminar la cocción sin quemarla.",
+    "Usa un termómetro para comprobar la cocción si es posible.",
+    "Deja reposar la carne 5-10 minutos antes de cortarla.",
+  ],
+  Vegetales: [
+    "Corta los vegetales en trozos grandes para evitar que se caigan entre la rejilla.",
+    "Pincela los vegetales con aceite y sazona con sal y pimienta.",
+    "Coloca los vegetales sobre la parrilla caliente.",
+    "Cocina hasta que estén tiernos pero aún crujientes.",
+    "Voltea ocasionalmente para que se cocinen de manera uniforme.",
+  ],
+  Pescado: [
+    "Asegúrate de que la parrilla esté bien limpia y caliente.",
+    "Pincela el pescado con aceite para evitar que se pegue.",
+    "Coloca el pescado con la piel hacia abajo primero (si tiene).",
+    "Cocina el pescado 4-5 minutos por lado, dependiendo del grosor.",
+    "El pescado está listo cuando se desmenuce fácilmente con un tenedor.",
+  ],
+  Pollo: [
+    "Marina el pollo por al menos 30 minutos antes de cocinarlo (opcional).",
+    "Cocina piezas grandes como muslos o pechugas en calor indirecto (15-20 minutos).",
+    "Para piezas pequeñas, usa calor directo pero vigila constantemente.",
+    "Voltea cada 5-7 minutos para evitar que se queme.",
+    "Comprueba que esté completamente cocido antes de servir (74°C internamente).",
+  ],
+  Arroz: [
+    "Necesitarás papel de aluminio resistente para cocinar arroz en la parrilla.",
+    "Lava el arroz hasta que el agua salga clara.",
+    "Coloca el arroz en el centro de un trozo grande de papel aluminio.",
+    "Añade agua (proporción 1:2 arroz-agua), sal y especias.",
+    "Cierra el papel aluminio formando un paquete sellado.",
+    "Coloca sobre la parrilla en calor indirecto y cocina 20-25 minutos.",
+    "Deja reposar 5 minutos antes de abrir.",
+  ],
+};
+
+/**
  * Obtiene las instrucciones predeterminadas para un tipo de cocina y las adapta según las preferencias
  */
 export const getInstructionsForRecipe = (
@@ -76,22 +126,44 @@ export const getInstructionsForRecipe = (
 
   // Adaptar instrucciones para recetas sin electricidad
   if (electricityType === "Sin electricidad") {
+    // Instrucciones para parrilla de carbón
+    if (cuisineType === "Almuerzo" || cuisineType === "Cena") {
+      const grillInstructions = [
+        ...GRILL_INSTRUCTIONS.General,
+        "Ahora prepararemos los ingredientes para la parrilla:",
+      ];
+
+      // Añadir instrucciones específicas según tipo de dieta
+      if (dietType === "Vegetariana" || dietType === "Vegana") {
+        grillInstructions.push(...GRILL_INSTRUCTIONS.Vegetales);
+      } else {
+        grillInstructions.push(
+          "Para la proteína principal:",
+          ...GRILL_INSTRUCTIONS.Proteína
+        );
+        grillInstructions.push(
+          "Para los vegetales de acompañamiento:",
+          ...GRILL_INSTRUCTIONS.Vegetales
+        );
+      }
+
+      grillInstructions.push(
+        "Sirve caliente directamente de la parrilla.",
+        "Nota: Ajusta los tiempos según el tipo y tamaño de los alimentos."
+      );
+
+      return grillInstructions;
+    }
+
+    // Mantener las instrucciones existentes para otros tipos de comida
     if (cuisineType === "Desayuno") {
       return [
         "Corta el aguacate por la mitad y extrae la pulpa en un bol.",
         "Machaca con un tenedor hasta obtener una consistencia suave.",
         "Añade sal, pimienta y jugo de limón al gusto.",
         "Unta sobre las rebanadas de pan.",
+        "Si tienes parrilla de carbón, puedes tostar el pan brevemente sobre ella.",
         "Agrega tus toppings favoritos por encima.",
-      ];
-    } else if (cuisineType === "Almuerzo" || cuisineType === "Cena") {
-      return [
-        "Lava y corta todos los vegetales en trozos pequeños.",
-        "Combina los vegetales en un bol grande.",
-        "Añade la proteína que hayas elegido (conservas, legumbres, etc).",
-        "Prepara un aliño con aceite, limón, sal y especias.",
-        "Vierte el aliño sobre la ensalada y mezcla bien.",
-        "Refrigera por 15-30 minutos antes de servir para mejor sabor.",
       ];
     } else if (cuisineType === "Merienda") {
       return [
@@ -99,15 +171,16 @@ export const getInstructionsForRecipe = (
         "Combina todas las frutas en un bol.",
         "Añade cereales, frutos secos o semillas si los tienes disponibles.",
         "Opcional: añade un poco de miel o algún edulcorante natural.",
+        "Si tienes parrilla encendida, puedes asar algunas frutas como manzanas o plátanos para darles un sabor ahumado.",
         "Mezcla bien y sirve fresco.",
       ];
     } else if (cuisineType === "Postre") {
       return [
-        "Pela y corta las frutas en trozos pequeños.",
-        "Colócalas en un recipiente y añade un poco de azúcar o miel.",
-        "Añade especias como canela, clavo o vainilla si las tienes.",
-        "Mezcla bien y deja reposar al menos 30 minutos.",
-        "Sirve frío, opcionalmente con un poco de yogur o crema.",
+        "Pela y corta las frutas en trozos medianos.",
+        "Si usas parrilla de carbón, envuelve las frutas en papel aluminio con un poco de azúcar y canela.",
+        "Coloca el paquete en la parrilla con calor indirecto por 10-15 minutos.",
+        "Alternativamente, puedes asar frutas como plátanos o manzanas directamente sobre la parrilla.",
+        "Sirve caliente, opcionalmente con un poco de miel por encima.",
       ];
     }
   }
@@ -159,7 +232,19 @@ export const getInstructionsForRecipe = (
 /**
  * Genera instrucciones para recetas con arroz y proteínas
  */
-export const getRiceWithProteinInstructions = (): string[] => {
+export const getRiceWithProteinInstructions = (
+  electricityType?: string
+): string[] => {
+  if (electricityType === "Sin electricidad") {
+    return [
+      ...GRILL_INSTRUCTIONS.General,
+      ...GRILL_INSTRUCTIONS.Arroz,
+      "Mientras el arroz se cocina, prepara la proteína:",
+      ...GRILL_INSTRUCTIONS.Proteína,
+      "Sirve el arroz con la proteína cocinada por encima.",
+    ];
+  }
+
   return [
     "Lava el arroz hasta que el agua salga clara.",
     "Corta la carne en trozos pequeños.",
@@ -177,7 +262,19 @@ export const getRiceWithProteinInstructions = (): string[] => {
 /**
  * Genera instrucciones para recetas con arroz y vegetales
  */
-export const getRiceWithVegetablesInstructions = (): string[] => {
+export const getRiceWithVegetablesInstructions = (
+  electricityType?: string
+): string[] => {
+  if (electricityType === "Sin electricidad") {
+    return [
+      ...GRILL_INSTRUCTIONS.General,
+      ...GRILL_INSTRUCTIONS.Arroz,
+      "Mientras el arroz se cocina, prepara los vegetales:",
+      ...GRILL_INSTRUCTIONS.Vegetales,
+      "Sirve el arroz con los vegetales asados por encima.",
+    ];
+  }
+
   return [
     "Lava el arroz hasta que el agua salga clara.",
     "Corta los vegetales en trozos pequeños.",
@@ -195,7 +292,17 @@ export const getRiceWithVegetablesInstructions = (): string[] => {
 /**
  * Genera instrucciones para recetas basadas solo en arroz
  */
-export const getPlainRiceInstructions = (): string[] => {
+export const getPlainRiceInstructions = (
+  electricityType?: string
+): string[] => {
+  if (electricityType === "Sin electricidad") {
+    return [
+      ...GRILL_INSTRUCTIONS.General,
+      ...GRILL_INSTRUCTIONS.Arroz,
+      "Sirve el arroz caliente con tus acompañamientos favoritos.",
+    ];
+  }
+
   return [
     "Lava el arroz hasta que el agua salga clara.",
     "En una olla, calienta el aceite a fuego medio.",
@@ -211,7 +318,17 @@ export const getPlainRiceInstructions = (): string[] => {
 /**
  * Genera instrucciones para recetas basadas en proteínas
  */
-export const getProteinInstructions = (): string[] => {
+export const getProteinInstructions = (electricityType?: string): string[] => {
+  if (electricityType === "Sin electricidad") {
+    return [
+      ...GRILL_INSTRUCTIONS.General,
+      ...GRILL_INSTRUCTIONS.Proteína,
+      "Para acompañar, también puedes asar vegetales en la parrilla:",
+      ...GRILL_INSTRUCTIONS.Vegetales.slice(0, 3),
+      "Sirve la proteína con los vegetales asados como guarnición.",
+    ];
+  }
+
   return [
     "Corta la carne en trozos del tamaño deseado.",
     "Sazona la carne con sal, pimienta y tus especias preferidas.",

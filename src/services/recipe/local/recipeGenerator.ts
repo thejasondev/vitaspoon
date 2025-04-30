@@ -101,6 +101,11 @@ export const generateRecipeTitle = (
 
   if (electricityType === "Sin electricidad") {
     title += " (Sin Electricidad)";
+
+    // Añadir indicador de parrilla si es una receta de almuerzo o cena
+    if (cuisineType === "Almuerzo" || cuisineType === "Cena" || hasProtein) {
+      title = title.replace("Sin Electricidad", "Parrilla");
+    }
   }
 
   return title;
@@ -121,11 +126,11 @@ export const generateCustomInstructions = (
 
   // Determinar el tipo de plato basado en ingredientes
   if (hasRice && hasProtein) {
-    instructions = getRiceWithProteinInstructions();
+    instructions = getRiceWithProteinInstructions(electricityType);
   } else if (hasRice) {
-    instructions = getRiceWithVegetablesInstructions();
+    instructions = getRiceWithVegetablesInstructions(electricityType);
   } else if (hasProtein) {
-    instructions = getProteinInstructions();
+    instructions = getProteinInstructions(electricityType);
   } else {
     // Instrucciones genéricas basadas en el tipo de comida
     instructions = getInstructionsForRecipe(
@@ -136,11 +141,20 @@ export const generateCustomInstructions = (
   }
 
   // Añadir nota sobre personalización
-  instructions.push(
-    `Esta receta ha sido personalizada con tus ingredientes: ${availableIngredients.join(
-      ", "
-    )}. Ajusta las cantidades según tu preferencia.`
-  );
+  let personalizedNote = `Esta receta ha sido personalizada con tus ingredientes: ${availableIngredients.join(
+    ", "
+  )}. Ajusta las cantidades según tu preferencia.`;
+
+  // Añadir información sobre la parrilla si es sin electricidad
+  if (
+    electricityType === "Sin electricidad" &&
+    (cuisineType === "Almuerzo" || cuisineType === "Cena" || hasProtein)
+  ) {
+    personalizedNote +=
+      " Esta receta está optimizada para preparación en parrilla de carbón.";
+  }
+
+  instructions.push(personalizedNote);
 
   return instructions;
 };
@@ -149,7 +163,7 @@ export const generateCustomInstructions = (
  * Crea una receta personalizada desde cero basada en las preferencias e ingredientes del usuario
  */
 export const createCustomRecipe = (userInput: UserInput): Recipe => {
-  const { dietType, cuisineType, difficultyLevel, prepTime } =
+  const { dietType, cuisineType, difficultyLevel, prepTime, electricityType } =
     userInput.preferences;
   const { allergies = [] } = userInput.dietaryRestrictions || {};
   const availableIngredients = userInput.availableIngredients || [];
@@ -223,7 +237,8 @@ export const createFallbackRecipe = (userInput: UserInput): Recipe => {
   // Añadir información sobre electricidad
   if (electricityType === "Sin electricidad") {
     instructions.push(
-      "Esta receta ha sido diseñada para prepararse sin necesidad de electricidad."
+      "Esta receta ha sido diseñada para prepararse sin necesidad de electricidad.",
+      "Puedes usar una parrilla de carbón o una pequeña estufa de gas para cocinar los ingredientes."
     );
   }
 
