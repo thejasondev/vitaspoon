@@ -3,7 +3,11 @@ import { generateRecipeWithAI } from "./recipeAIService";
 import { generateRecipeWithGemini } from "./geminiAIService";
 import { generateRecipeWithDeepSeek } from "./deepseekAIService";
 import { generateId } from "../storage/storageService";
-import { generateLocalRecipe } from "../recipe/localRecipeService";
+import {
+  generateLocalRecipe,
+  getLocalRecipesWhenAIUnavailable,
+} from "../recipe/local";
+import { LOCAL_RECIPES } from "../../constants/recipes";
 
 // Tipos de proveedores de IA disponibles
 type AIProvider = "openai" | "gemini" | "deepseek" | "local";
@@ -161,11 +165,47 @@ const isProviderAccessible = async (provider: AIProvider): Promise<boolean> => {
 };
 
 /**
+ * Selecciona y devuelve una receta local cuando no hay IA disponible
+ */
+const getLocalRecipeWhenAIUnavailable = async (
+  userInput: UserInput
+): Promise<Recipe> => {
+  // Intentar encontrar recetas locales que coincidan con las preferencias del usuario
+  const matchingLocalRecipes = getLocalRecipesWhenAIUnavailable(
+    LOCAL_RECIPES,
+    userInput
+  );
+
+  if (matchingLocalRecipes.length > 0) {
+    console.log(
+      `✅ Usando una de ${matchingLocalRecipes.length} recetas locales encontradas.`
+    );
+
+    // Seleccionar una receta aleatoria entre las mejores coincidencias (hasta 3)
+    const recipeIndex = Math.floor(
+      Math.random() * Math.min(3, matchingLocalRecipes.length)
+    );
+    const selectedRecipe = matchingLocalRecipes[recipeIndex];
+
+    // Generar un ID único para esta instancia de la receta
+    return {
+      ...selectedRecipe,
+      id: generateId(),
+      createdAt: new Date().toISOString(),
+    };
+  }
+
+  console.log("👨‍🍳 Generando receta local con el generador integrado...");
+  return await generateLocalRecipe(userInput);
+};
+
+/**
  * Genera una receta utilizando el proveedor de IA más adecuado
  * o el modo sin conexión para usuarios en regiones con restricciones
  */
 export const generateRecipeWithBestAI = async (
-  userInput: UserInput
+  userInput: UserInput,
+  excludedProviders: AIProvider[] = []
 ): Promise<Recipe> => {
   try {
     // Verificar si el usuario está en Cuba
@@ -175,9 +215,14 @@ export const generateRecipeWithBestAI = async (
     );
 
     // Obtener proveedores disponibles (con API keys configuradas)
-    let availableProviders = getAvailableProviders();
+    let availableProviders = getAvailableProviders().filter(
+      (provider) => !excludedProviders.includes(provider)
+    );
+
     console.log(
-      `🔑 Proveedores con API keys: ${availableProviders.join(", ")}`
+      `🔑 Proveedores con API keys disponibles: ${availableProviders.join(
+        ", "
+      )}`
     );
 
     // Filtrar los proveedores que no son accesibles en la región del usuario
@@ -199,67 +244,88 @@ export const generateRecipeWithBestAI = async (
       (_, index) => accessibilityChecks[index]
     );
 
-    console.log(`✅ Proveedores accesibles: ${availableProviders.join(", ")}`);
+    // Si no hay proveedores disponibles o solo está disponible el proveedor local
+    if (
+      availableProviders.length === 0 ||
+      (availableProviders.length === 1 && availableProviders[0] === "local")
+    ) {
+      console.log("⚠️ No hay proveedores de IA disponibles.");
+      return await getLocalRecipeWhenAIUnavailable(userInput);
+    }
 
-    // Si el usuario está en Cuba, priorizar OpenRouter
+    // Elegir el mejor proveedor de IA disponible
+    let preferredProvider = availableProviders[0]; // El primero disponible en la lista priorizada
+
+    // Si estamos en Cuba y DeepSeek está disponible, usarlo por defecto
+    // ya que funciona a través de OpenRouter y suele ser más accesible en Cuba
     if (isInCuba && availableProviders.includes("deepseek")) {
-      console.log(
-        "🇨🇺 Usuario en Cuba: usando DeepSeek a través de OpenRouter como proveedor preferido"
-      );
-      try {
-        return await generateRecipeWithDeepSeek(userInput);
-      } catch (error) {
-        console.error(
-          "❌ Error al generar receta con DeepSeek a través de OpenRouter:",
-          error
-        );
-        // Si OpenRouter falla, intentar con otro proveedor disponible (excepto OpenAI y Gemini que están bloqueados)
-        if (availableProviders.includes("local")) {
-          console.log(
-            "⚠️ DeepSeek falló, usando generación local como respaldo para usuario en Cuba"
-          );
-          return generateLocalRecipe(userInput);
-        }
+      preferredProvider = "deepseek";
+      console.log("🇨🇺 Usando DeepSeek (vía OpenRouter) para usuario en Cuba");
+    }
+
+    console.log(`🤖 Generando receta con ${preferredProvider}...`);
+
+    try {
+      // Generar receta usando el proveedor elegido
+      let recipe: Recipe;
+
+      switch (preferredProvider) {
+        case "openai":
+          recipe = await generateRecipeWithAI(userInput);
+          break;
+        case "gemini":
+          recipe = await generateRecipeWithGemini(userInput);
+          break;
+        case "deepseek":
+          recipe = await generateRecipeWithDeepSeek(userInput);
+          break;
+        case "local":
+          return await getLocalRecipeWhenAIUnavailable(userInput);
+        default:
+          throw new Error(`Proveedor de IA desconocido: ${preferredProvider}`);
       }
+
+      // Añadir metadatos adicionales a la receta
+      return {
+        ...recipe,
+        id: recipe.id || generateId(),
+        createdAt: recipe.createdAt || new Date().toISOString(),
+      };
+    } catch (err) {
+      // Manejar el error correctamente, verificando su tipo antes de acceder a propiedades
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      console.error(
+        `❌ Error con proveedor ${preferredProvider}:`,
+        errorMessage
+      );
+
+      // Si hay un error con el proveedor principal, intentar con la siguiente opción
+      const remainingProviders = availableProviders.filter(
+        (p) => p !== preferredProvider
+      );
+
+      if (remainingProviders.length > 0) {
+        console.log(
+          `🔄 Intentando con proveedor alternativo: ${remainingProviders[0]}`
+        );
+
+        // Llamada recursiva con los proveedores restantes
+        // Pasamos el array de proveedores excluidos para evitar ciclos
+        return await generateRecipeWithBestAI(userInput, [
+          ...excludedProviders,
+          preferredProvider,
+        ]);
+      }
+
+      throw err; // Re-lanzar si no hay más proveedores
     }
+  } catch (err) {
+    // Convertir el error a string de manera segura
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    console.error("❌ Todos los proveedores de IA fallaron:", errorMessage);
+    console.log("👨‍🍳 Usando generador local como último recurso...");
 
-    // Si no hay proveedores de IA disponibles o accesibles (excepto local), usar el respaldo local
-    const aiProviders = availableProviders.filter((p) => p !== "local");
-    if (aiProviders.length === 0) {
-      console.warn(AI_CONFIG.messages.apiKeyMissing);
-      return generateLocalRecipe(userInput);
-    }
-
-    // Determinar qué proveedor usar según el orden de prioridad exacto:
-    // 1. OpenAI, 2. Gemini, 3. DeepSeek (OpenRouter), 4. Local
-    let provider: AIProvider = "local";
-
-    // Verificar cada proveedor en orden de prioridad
-    if (availableProviders.includes("openai")) {
-      provider = "openai";
-    } else if (availableProviders.includes("gemini")) {
-      provider = "gemini";
-    } else if (availableProviders.includes("deepseek")) {
-      provider = "deepseek";
-    }
-
-    console.log(`🤖 Usando proveedor de IA: ${provider}`);
-
-    // Intentar generar con el proveedor seleccionado
-    switch (provider) {
-      case "openai":
-        return await generateRecipeWithAI(userInput);
-      case "gemini":
-        return await generateRecipeWithGemini(userInput);
-      case "deepseek":
-        return await generateRecipeWithDeepSeek(userInput);
-      case "local":
-      default:
-        return await generateLocalRecipe(userInput);
-    }
-  } catch (error) {
-    console.error("❌ Error al generar receta:", error);
-    console.warn(AI_CONFIG.messages.generationError);
-    return generateLocalRecipe(userInput);
+    // Como último recurso, usar la función de búsqueda local
+    return await getLocalRecipeWhenAIUnavailable(userInput);
   }
 };

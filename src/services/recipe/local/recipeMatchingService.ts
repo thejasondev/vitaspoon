@@ -102,13 +102,44 @@ export const sortRecipesByRelevance = (
  */
 export const filterRecipesByUserPreferences = (
   recipes: Recipe[],
-  userInput: UserInput
+  userInput: UserInput,
+  strictMatching: boolean = true
 ): Recipe[] => {
-  const { dietType, electricityType, difficultyLevel, prepTime } =
+  const { cuisineType, dietType, electricityType, difficultyLevel, prepTime } =
     userInput.preferences;
   const { allergies = [] } = userInput.dietaryRestrictions || {};
 
+  // Si no hay recetas para filtrar, devolver array vacío
+  if (!recipes || recipes.length === 0) {
+    return [];
+  }
+
   return recipes.filter((recipe) => {
+    // Filtrar por tipo de comida (es crítico mantener esto)
+    if (cuisineType && recipe.cuisineType !== cuisineType) {
+      return false;
+    }
+
+    // En modo no estricto, permitimos más flexibilidad en los otros criterios
+    if (!strictMatching) {
+      // Para alergias siempre mantenemos el filtro por seguridad
+      if (
+        allergies.length > 0 &&
+        allergies.some((allergen) =>
+          recipe.ingredients.some((ing) =>
+            ing.name.toLowerCase().includes(allergen.toLowerCase())
+          )
+        )
+      ) {
+        return false;
+      }
+
+      // En modo no estricto, permitimos cualquier otra condición
+      return true;
+    }
+
+    // Modo estricto - aplicar todos los filtros
+
     // Filtrar por tipo de dieta si se especificó
     if (dietType && recipe.dietType !== dietType) {
       return false;
@@ -205,4 +236,53 @@ export const customizeRecipeWithUserIngredients = (
   }
 
   return customizedRecipe;
+};
+
+/**
+ * Obtiene recetas locales cuando la IA no está disponible
+ * Utiliza filtrado menos estricto para asegurar mejores resultados
+ */
+export const getLocalRecipesWhenAIUnavailable = (
+  allRecipes: Recipe[],
+  userInput: UserInput
+): Recipe[] => {
+  const { cuisineType } = userInput.preferences;
+
+  // Paso 1: Intentar encontrar recetas que coincidan exactamente con el tipo de comida
+  const recipesMatchingCuisineType = allRecipes.filter(
+    (recipe) => recipe.cuisineType === cuisineType
+  );
+
+  if (recipesMatchingCuisineType.length === 0) {
+    console.log(
+      `No se encontraron recetas para ${cuisineType}, aplicando filtrado más flexible`
+    );
+    // Si no hay recetas específicas, devolver las primeras 5 recetas disponibles
+    return allRecipes.slice(0, 5);
+  }
+
+  // Paso 2: Filtrar por alergias (por seguridad siempre aplicamos este filtro)
+  const { allergies = [] } = userInput.dietaryRestrictions || {};
+  let filteredRecipes = recipesMatchingCuisineType;
+
+  if (allergies.length > 0) {
+    filteredRecipes = filteredRecipes.filter(
+      (recipe) =>
+        !allergies.some((allergen) =>
+          recipe.ingredients.some((ing) =>
+            ing.name.toLowerCase().includes(allergen.toLowerCase())
+          )
+        )
+    );
+  }
+
+  // Paso 3: Aplicar filtrado flexible (no estricto) por otros criterios
+  const flexibleFilteredRecipes = filterRecipesByUserPreferences(
+    filteredRecipes,
+    userInput,
+    false // modo no estricto
+  );
+
+  // Devolver las mejores 5 recetas o todas si hay menos
+  return flexibleFilteredRecipes.slice(0, 5);
 };

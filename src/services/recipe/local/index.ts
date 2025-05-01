@@ -11,6 +11,7 @@ import {
   sortRecipesByRelevance,
   customizeRecipeWithUserIngredients,
 } from "./recipeMatchingService";
+import { getLocalRecipesWhenAIUnavailable } from "./recipeMatchingService";
 
 /**
  * Genera una receta local basada en las preferencias del usuario
@@ -60,23 +61,53 @@ export const generateLocalRecipe = async (
 
       if (exactCuisineTypeRecipes.length === 0) {
         console.log(
-          `No se encontraron recetas del tipo ${cuisineType}. Creando una personalizada.`
+          `No se encontraron recetas del tipo ${cuisineType}. Buscando alternativas.`
         );
-        // Si no hay recetas del tipo de comida, crear una personalizada con los ingredientes disponibles
-        return createCustomRecipe(userInput);
-      }
 
-      candidateRecipes = exactCuisineTypeRecipes;
+        // Usar la nueva función para obtener recetas con filtrado menos estricto
+        const alternativeRecipes = getLocalRecipesWhenAIUnavailable(
+          LOCAL_RECIPES,
+          userInput
+        );
+
+        if (alternativeRecipes.length > 0) {
+          console.log(
+            `✅ Encontradas ${alternativeRecipes.length} recetas alternativas.`
+          );
+          candidateRecipes = alternativeRecipes;
+        } else {
+          // Si todavía no hay recetas, crear una personalizada
+          console.log(
+            "No se encontraron alternativas. Creando una personalizada."
+          );
+          return createCustomRecipe(userInput);
+        }
+      } else {
+        candidateRecipes = exactCuisineTypeRecipes;
+      }
     }
 
     // Aplicar filtros adicionales (dieta, tiempo, dificultad, etc.)
     let matchingRecipes = filterRecipesByUserPreferences(
       candidateRecipes,
-      userInput
+      userInput,
+      true // Modo estricto por defecto
     );
 
+    // Si no encontramos recetas con filtrado estricto, intentar con filtrado flexible
+    if (matchingRecipes.length === 0) {
+      console.log(
+        "No hay recetas con filtrado estricto. Usando filtrado flexible."
+      );
+      matchingRecipes = filterRecipesByUserPreferences(
+        candidateRecipes,
+        userInput,
+        false // Modo flexible
+      );
+    }
+
     // Si hay ingredientes disponibles, puntuar y ordenar las recetas
-    if (availableIngredients.length > 0) {
+    if (availableIngredients.length > 0 && matchingRecipes.length > 0) {
       // Puntuar las recetas según coincidencia con ingredientes disponibles
       const scoredRecipes = scoreRecipesByIngredientMatch(
         matchingRecipes,
@@ -98,13 +129,31 @@ export const generateLocalRecipe = async (
     // Si no hay recetas que coincidan con todos los criterios
     if (matchingRecipes.length === 0) {
       console.log(
-        "No hay recetas con todos los criterios. Creando una personalizada."
+        "No hay recetas con todos los criterios, incluso con filtrado flexible. Usando función de búsqueda alternativa."
       );
-      return createCustomRecipe(userInput);
+
+      // Usar la función de búsqueda alternativa
+      const localRecipes = getLocalRecipesWhenAIUnavailable(
+        LOCAL_RECIPES,
+        userInput
+      );
+
+      if (localRecipes.length > 0) {
+        console.log(
+          `✅ Encontradas ${localRecipes.length} recetas alternativas.`
+        );
+        matchingRecipes = localRecipes;
+      } else {
+        // Si todavía no hay recetas, crear una personalizada
+        return createCustomRecipe(userInput);
+      }
     }
 
-    // Seleccionar la mejor receta (primera después de ordenar)
-    const selectedRecipe = matchingRecipes[0];
+    // Seleccionar la mejor receta o una aleatoria si hay varias
+    const recipeIndex = Math.floor(
+      Math.random() * Math.min(3, matchingRecipes.length)
+    );
+    const selectedRecipe = matchingRecipes[recipeIndex];
 
     // Personalizar la receta con ingredientes del usuario
     const customizedRecipe = customizeRecipeWithUserIngredients(
