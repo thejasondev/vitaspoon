@@ -1,36 +1,49 @@
 ---
 const navLinks = [
   { name: 'Inicio', href: '/' },
-  { name: 'Recetas', href: '/recetas' }, // Ajusta la ruta si es diferente
-  { name: 'Mis Recetas', href: '/mis-recetas' } // Ajusta la ruta si es diferente
+  { name: 'Recetas', href: '/recetas' },
+  { name: 'Mis Recetas', href: '/mis-recetas' }
 ];
 ---
 
 <header class="bg-white shadow-sm sticky top-0 z-50">
   <nav class="container mx-auto px-4 py-3 flex justify-between items-center">
-    <a href="/" class="text-2xl font-bold text-green-700 hover:text-green-800 transition-colors">
-      VitaSpoon
+    <a href="/" class="text-2xl font-bold hover:text-green-800 transition-colors flex items-center">
+      <div class="flex items-center">
+        <div>
+          <span class="inline-block"><span class="text-green-800">Vita</span><span class="text-emerald-600">Spoon</span></span>
+        </div>
+      </div>
     </a>
     
     <!-- Menú móvil (hamburguesa) -->
-    <button id="menu-toggle" class="md:hidden text-green-700 focus:outline-none">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-      </svg>
+    <button 
+      id="menu-toggle" 
+      class="md:hidden relative z-50 w-10 h-10 text-green-700 focus:outline-none flex items-center justify-center"
+      aria-expanded="false"
+      aria-label="Menú de navegación"
+    >
+      <div class="w-6 h-6 relative transform transition-all duration-300 ease-in-out">
+        <span id="bar1" class="absolute h-0.5 w-6 bg-green-700 rounded-full transform transition-all duration-300 ease-in-out" style="top: 20%; left: 0;"></span>
+        <span id="bar2" class="absolute h-0.5 w-6 bg-green-700 rounded-full transform transition-all duration-300 ease-in-out" style="top: 50%; left: 0; transform: translateY(-50%);"></span>
+        <span id="bar3" class="absolute h-0.5 w-6 bg-green-700 rounded-full transform transition-all duration-300 ease-in-out" style="bottom: 20%; left: 0;"></span>
+      </div>
     </button>
     
     <!-- Menú desktop -->
     <ul class="hidden md:flex space-x-6">
       {navLinks.map(link => {
-        const isActive = Astro.url.pathname === link.href;
+        const isActive = Astro.url.pathname === link.href || 
+                         (link.href !== '/' && Astro.url.pathname.startsWith(link.href));
         return (
           <li>
             <a 
               href={link.href} 
               class:list={[
-                "text-gray-600 hover:text-green-600 transition-colors pb-1 border-b-2",
+                "text-gray-600 hover:text-green-600 transition-colors pb-1 border-b-2 font-medium",
                 isActive ? 'border-green-500 text-green-600' : 'border-transparent'
               ]}
+              aria-current={isActive ? 'page' : undefined}
             >
               {link.name}
             </a>
@@ -39,46 +52,140 @@ const navLinks = [
       })}
     </ul>
     <!-- Opcional: Botón de login/usuario -->
-    <!-- <button class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">Acceder</button> -->
+    <!-- <button class="hidden md:block px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">Acceder</button> -->
   </nav>
   
   <!-- Menú móvil desplegable -->
-  <div id="mobile-menu" class="hidden bg-white md:hidden">
-    <div class="container mx-auto px-4 py-3">
-      <ul class="flex flex-col space-y-3">
+  <div 
+    id="mobile-menu" 
+    class="fixed inset-0 bg-white md:hidden transform transition-transform duration-300 ease-in-out translate-x-full z-40"
+    aria-hidden="true"
+  >
+    <div class="container mx-auto px-4 pt-20 pb-8 h-full flex flex-col">
+      <div class="text-center mb-8">
+        <img src="/images/VitaSpoon.png" alt="VitaSpoon Logo" class="rounded-full w-24 h-24 mx-auto mb-2" />
+        <h2 class="text-xl font-bold"><span class="text-[#7c8e57]">Vita</span><span class="text-[#879d61]">Spoon</span></h2>
+        <p class="text-sm text-gray-500">Generador de recetas</p>
+      </div>
+      <ul class="flex flex-col space-y-4 mt-4">
         {navLinks.map(link => {
-          const isActive = Astro.url.pathname === link.href;
+          const isActive = Astro.url.pathname === link.href || 
+                          (link.href !== '/' && Astro.url.pathname.startsWith(link.href));
           return (
-            <li>
+            <li class="border-b border-gray-100 pb-3">
               <a 
                 href={link.href} 
                 class:list={[
-                  "block px-3 py-2 rounded-md text-base font-medium transition-colors",
+                  "block px-3 py-3 text-lg font-medium transition-all duration-200 ease-in-out sm:flex items-center",
                   isActive 
-                    ? 'bg-green-50 text-green-700' 
-                    : 'text-gray-600 hover:bg-green-50 hover:text-green-700'
+                    ? 'text-green-700 bg-green-50 rounded-lg' 
+                    : 'text-gray-600 hover:text-green-700 hover:bg-green-50 hover:rounded-lg'
                 ]}
+                aria-current={isActive ? 'page' : undefined}
               >
+                <span class="mr-3">
+                  {link.name === 'Inicio' && (
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                    </svg>
+                  )}
+                  {link.name === 'Recetas' && (
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                      <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd" />
+                    </svg>
+                  )}
+                  {link.name === 'Mis Recetas' && (
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M8 5a1 1 0 100 2h5.586l-1.293 1.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L13.586 5H8zM12 15a1 1 0 100-2H6.414l1.293-1.293a1 1 0 10-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L6.414 15H12z" />
+                    </svg>
+                  )}
+                </span>
                 {link.name}
               </a>
             </li>
           )
         })}
       </ul>
+      <div class="mt-20">
+        <div class="bg-green-50 rounded-lg p-4 text-center" style="background-color: #f0f3e5;">
+          <p class="text-sm text-green-800 mb-2">¡No te pierdas nuestras recetas!</p>
+          <p class="text-xs text-gray-600 mb-3">Recibe inspiración culinaria.</p>
+        </div>
+      </div>
     </div>
   </div>
 </header>
 
 <script>
-  // Script para el toggle del menú móvil
+  // Script para el toggle del menú móvil con animación
   document.addEventListener('DOMContentLoaded', () => {
     const menuToggle = document.getElementById('menu-toggle');
     const mobileMenu = document.getElementById('mobile-menu');
+    const bar1 = document.getElementById('bar1');
+    const bar2 = document.getElementById('bar2');
+    const bar3 = document.getElementById('bar3');
+    let isOpen = false;
     
-    if (menuToggle && mobileMenu) {
-      menuToggle.addEventListener('click', () => {
-        mobileMenu.classList.toggle('hidden');
+    if (menuToggle && mobileMenu && bar1 && bar2 && bar3) {
+      const toggleMenu = () => {
+        isOpen = !isOpen;
+        
+        // Actualiza atributo aria-expanded para accesibilidad
+        menuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        mobileMenu.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+        
+        // Anima las barras para formar una X
+        if (isOpen) {
+          // Transformar a X
+          bar1.style.transform = 'rotate(45deg)';
+          bar1.style.top = '50%';
+          bar1.style.marginTop = '-1px';
+          
+          bar2.style.opacity = '0';
+          
+          bar3.style.transform = 'rotate(-45deg)';
+          bar3.style.bottom = '50%';
+          bar3.style.marginBottom = '-1px';
+          
+          // Abre el menú
+          document.body.style.overflow = 'hidden'; // Previene scroll
+          mobileMenu.classList.remove('translate-x-full');
+          mobileMenu.classList.add('translate-x-0');
+        } else {
+          // Volver a barras
+          bar1.style.transform = 'rotate(0)';
+          bar1.style.top = '20%';
+          bar1.style.marginTop = '0';
+          
+          bar2.style.opacity = '1';
+          
+          bar3.style.transform = 'rotate(0)';
+          bar3.style.bottom = '20%';
+          bar3.style.marginBottom = '0';
+          
+          // Cierra el menú
+          document.body.style.overflow = '';
+          mobileMenu.classList.remove('translate-x-0');
+          mobileMenu.classList.add('translate-x-full');
+        }
+      };
+      
+      // Toggle al hacer clic en el botón
+      menuToggle.addEventListener('click', toggleMenu);
+      
+      // Cierra menú al hacer clic en un enlace
+      const menuLinks = mobileMenu.querySelectorAll('a');
+      menuLinks.forEach(link => {
+        link.addEventListener('click', () => {
+          if (isOpen) toggleMenu();
+        });
+      });
+      
+      // Cierra menú al presionar Escape
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && isOpen) toggleMenu();
       });
     }
   });
-</script> 
+</script>
