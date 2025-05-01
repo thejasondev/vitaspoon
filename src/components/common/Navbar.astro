@@ -6,7 +6,7 @@ const navLinks = [
 ];
 ---
 
-<header class="bg-white shadow-md fixed top-0 left-0 right-0 z-40 transition-transform duration-300" id="navbar">
+<header class="bg-white shadow-sm sticky top-0 z-50">
   <nav class="container mx-auto px-4 py-3 flex justify-between items-center">
     <a href="/" class="text-2xl font-bold hover:text-green-800 transition-colors flex items-center">
       <div class="flex items-center">
@@ -58,7 +58,7 @@ const navLinks = [
   <!-- Menú móvil desplegable -->
   <div 
     id="mobile-menu" 
-    class="fixed inset-0 bg-white md:hidden transform transition-transform duration-300 ease-in-out translate-x-full z-50"
+    class="fixed inset-0 bg-white md:hidden transform transition-transform duration-300 ease-in-out translate-x-full z-40"
     aria-hidden="true"
   >
     <div class="container mx-auto px-4 pt-20 pb-8 h-full flex flex-col">
@@ -111,9 +111,6 @@ const navLinks = [
   </div>
 </header>
 
-<!-- Div espaciador para compensar el navbar fijo -->
-<div class="h-16"></div>
-
 <script>
   // Script para el toggle del menú móvil con animación
   document.addEventListener('DOMContentLoaded', () => {
@@ -122,28 +119,7 @@ const navLinks = [
     const bar1 = document.getElementById('bar1');
     const bar2 = document.getElementById('bar2');
     const bar3 = document.getElementById('bar3');
-    const navbar = document.getElementById('navbar');
     let isOpen = false;
-    let lastScrollTop = 0;
-    
-    // Función para manejar el scroll y ocultar/mostrar la barra de navegación
-    function handleScroll() {
-      const scrollTop = window.scrollY || document.documentElement.scrollTop;
-      
-      // Muestra/oculta la barra de navegación según la dirección del scroll
-      if (scrollTop > lastScrollTop && scrollTop > 100 && navbar) {
-        // Scroll hacia abajo - oculta la barra
-        navbar.style.transform = 'translateY(-100%)';
-      } else if (navbar) {
-        // Scroll hacia arriba - muestra la barra
-        navbar.style.transform = 'translateY(0)';
-      }
-      
-      lastScrollTop = scrollTop;
-    }
-    
-    // Escucha eventos de scroll
-    window.addEventListener('scroll', handleScroll, { passive: true });
     
     if (menuToggle && mobileMenu && bar1 && bar2 && bar3) {
       const toggleMenu = () => {
@@ -207,36 +183,3 @@ const navLinks = [
     }
   });
 </script>
-
-<style is:global>
-  /* Estilo personalizado para la barra de desplazamiento */
-  ::-webkit-scrollbar {
-    width: 10px;
-  }
-  
-  ::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    background-color: #7c8e57;
-    border-radius: 10px;
-    border: 2px solid #f1f1f1;
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    background-color: #5c6a41;
-  }
-  
-  /* Estilos para Firefox */
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: #7c8e57 #f1f1f1;
-  }
-  
-  /* Ajuste para asegurar que el contenido no quede debajo del navbar en anclas */
-  html {
-    scroll-padding-top: 80px;
-  }
-</style>
