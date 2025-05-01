@@ -6,7 +6,7 @@ const navLinks = [
 ];
 ---
 
-<header class="bg-white shadow-sm sticky top-0 z-50">
+<header class="fixed top-0 inset-x-0 bg-white shadow-md z-50 transition-transform duration-300" id="navbar">
   <nav class="container mx-auto px-4 py-3 flex justify-between items-center">
     <a href="/" class="text-2xl font-bold hover:text-green-800 transition-colors flex items-center">
       <div class="flex items-center">
@@ -64,7 +64,7 @@ const navLinks = [
     <div class="container mx-auto px-4 pt-20 pb-8 h-full flex flex-col">
       <div class="text-center mb-8">
         <img src="/images/VitaSpoon.png" alt="VitaSpoon Logo" class="rounded-full w-24 h-24 mx-auto mb-2" />
-        <h2 class="text-xl font-bold"><span class="text-[#7c8e57]">Vita</span><span class="text-[#879d61]">Spoon</span></h2>
+        <h2 class="text-xl font-bold"><span class="text-green-800">Vita</span><span class="text-emerald-600">Spoon</span></h2>
         <p class="text-sm text-gray-500">Generador de recetas</p>
       </div>
       <ul class="flex flex-col space-y-4 mt-4">
@@ -76,7 +76,7 @@ const navLinks = [
               <a 
                 href={link.href} 
                 class:list={[
-                  "block px-3 py-3 text-lg font-medium transition-all duration-200 ease-in-out sm:flex items-center",
+                  "block px-3 py-3 text-lg font-medium transition-all duration-200 ease-in-out md:flex items-center",
                   isActive 
                     ? 'text-green-700 bg-green-50 rounded-lg' 
                     : 'text-gray-600 hover:text-green-700 hover:bg-green-50 hover:rounded-lg'
@@ -111,17 +111,23 @@ const navLinks = [
   </div>
 </header>
 
+<!-- Spacer para compensar la altura del navbar fijo -->
+<div class="h-16"></div>
+
 <script>
   // Script para el toggle del menú móvil con animación
   document.addEventListener('DOMContentLoaded', () => {
     const menuToggle = document.getElementById('menu-toggle');
     const mobileMenu = document.getElementById('mobile-menu');
+    const navbar = document.getElementById('navbar');
     const bar1 = document.getElementById('bar1');
     const bar2 = document.getElementById('bar2');
     const bar3 = document.getElementById('bar3');
     let isOpen = false;
+    let lastScrollTop = 0;
     
-    if (menuToggle && mobileMenu && bar1 && bar2 && bar3) {
+    if (menuToggle && mobileMenu && bar1 && bar2 && bar3 && navbar) {
+      // Gestión del menú móvil
       const toggleMenu = () => {
         isOpen = !isOpen;
         
@@ -146,6 +152,9 @@ const navLinks = [
           document.body.style.overflow = 'hidden'; // Previene scroll
           mobileMenu.classList.remove('translate-x-full');
           mobileMenu.classList.add('translate-x-0');
+          
+          // Asegura que la navbar esté visible cuando el menú está abierto
+          navbar.classList.remove('-translate-y-full');
         } else {
           // Volver a barras
           bar1.style.transform = 'rotate(0)';
@@ -180,6 +189,32 @@ const navLinks = [
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && isOpen) toggleMenu();
       });
+      
+      // Manejo del scroll para ocultar/mostrar la navbar
+      window.addEventListener('scroll', () => {
+        // No aplicar esto cuando el menú está abierto
+        if (isOpen) return;
+        
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        // Si estamos al inicio de la página, siempre mostrar la navbar
+        if (scrollTop <= 50) {
+          navbar.classList.remove('-translate-y-full');
+          return;
+        }
+        
+        // Ocultar al hacer scroll hacia abajo, mostrar al hacer scroll hacia arriba
+        if (scrollTop > lastScrollTop) {
+          // Scroll hacia abajo
+          navbar.classList.add('-translate-y-full');
+        } else {
+          // Scroll hacia arriba
+          navbar.classList.remove('-translate-y-full');
+        }
+        
+        // Guardar la posición actual para la siguiente vez
+        lastScrollTop = scrollTop;
+      }, { passive: true }); // Usar passive para mejor rendimiento
     }
   });
 </script>
