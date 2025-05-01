@@ -1,12 +1,22 @@
 import { useState, useEffect } from "react";
 import type { Recipe } from "../../types/recipe";
-import { RecipeDisplay } from "../ui";
+import { RecipeDisplay, ConfirmDialog } from "../ui";
 import { storageService } from "../../services/storage/storageService";
+import { ToastProvider } from "../../contexts/ToastContext";
+import { useToast } from "../../contexts/ToastContext";
 
-export default function SavedRecipesPage() {
+function SavedRecipesPageContent() {
   const [savedRecipes, setSavedRecipes] = useState<Recipe[]>([]);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    recipeId: "",
+    recipeName: "",
+  });
+
+  // Usar el hook de Toast
+  const { showToast } = useToast();
 
   // Cargar recetas guardadas al inicio
   useEffect(() => {
@@ -20,26 +30,61 @@ export default function SavedRecipesPage() {
       }
     } catch (err) {
       console.error("Error cargando recetas guardadas:", err);
+      showToast("Error al cargar las recetas guardadas", "error");
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  // Función para eliminar una receta guardada
-  const handleDeleteRecipe = (recipeId: string) => {
-    if (confirm("¿Estás seguro que deseas eliminar esta receta?")) {
-      const updatedRecipes = storageService.savedRecipes.remove(recipeId);
-      setSavedRecipes(updatedRecipes);
+  // Abrir el diálogo de confirmación
+  const openDeleteConfirmation = (recipeId: string, recipeName: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      recipeId,
+      recipeName,
+    });
+  };
 
-      // Si se elimina la receta seleccionada, seleccionar otra
-      if (selectedRecipe && selectedRecipe.id === recipeId) {
-        setSelectedRecipe(updatedRecipes.length > 0 ? updatedRecipes[0] : null);
-      }
+  // Cerrar el diálogo de confirmación
+  const closeDeleteConfirmation = () => {
+    setConfirmDialog({
+      isOpen: false,
+      recipeId: "",
+      recipeName: "",
+    });
+  };
+
+  // Función para eliminar una receta guardada
+  const handleDeleteRecipe = () => {
+    const recipeId = confirmDialog.recipeId;
+    if (!recipeId) return;
+
+    const updatedRecipes = storageService.savedRecipes.remove(recipeId);
+    setSavedRecipes(updatedRecipes);
+
+    // Si se elimina la receta seleccionada, seleccionar otra
+    if (selectedRecipe && selectedRecipe.id === recipeId) {
+      setSelectedRecipe(updatedRecipes.length > 0 ? updatedRecipes[0] : null);
     }
+
+    // Mostrar notificación
+    showToast("Receta eliminada correctamente", "info");
+
+    // Cerrar el diálogo
+    closeDeleteConfirmation();
   };
 
   return (
     <div className="max-w-6xl mx-auto">
+      {/* Diálogo de confirmación */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title="Eliminar receta"
+        message={`¿Estás seguro que deseas eliminar la receta: "${confirmDialog.recipeName}"?`}
+        onConfirm={handleDeleteRecipe}
+        onCancel={closeDeleteConfirmation}
+      />
+
       {isLoading ? (
         <div className="flex justify-center items-center h-60">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-600"></div>
@@ -107,7 +152,10 @@ export default function SavedRecipesPage() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDeleteRecipe(recipe.id as string);
+                          openDeleteConfirmation(
+                            recipe.id as string,
+                            recipe.title
+                          );
                         }}
                         className="text-red-500 hover:text-red-700"
                         aria-label="Eliminar receta"
@@ -155,5 +203,14 @@ export default function SavedRecipesPage() {
         </div>
       )}
     </div>
+  );
+}
+
+// Componente principal envuelto con el ToastProvider
+export default function SavedRecipesPage() {
+  return (
+    <ToastProvider>
+      <SavedRecipesPageContent />
+    </ToastProvider>
   );
 }

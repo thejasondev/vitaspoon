@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import { RecipeForm } from "../forms";
-import { RecipeDisplay, GenerateButton } from "../ui";
+import { RecipeDisplay, GenerateButton, ConfirmDialog } from "../ui";
 import type { Recipe, UserInput } from "../../types/recipe";
 import {
   storageService,
   STORAGE_KEYS,
 } from "../../services/storage/storageService";
 import { generateRecipe } from "../../services/recipe/recipeService";
+import { ToastProvider } from "../../contexts/ToastContext";
+import { useToast } from "../../contexts/ToastContext";
 
-export default function RecipeFormPage() {
+function RecipeFormPageContent() {
   // Estado inicial para el formulario
   const [userInput, setUserInput] = useState<UserInput>({
     dietaryRestrictions: {
@@ -31,6 +33,14 @@ export default function RecipeFormPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savedRecipes, setSavedRecipes] = useState<Recipe[]>([]);
+
+  // Estado para el diálogo de confirmación
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+  });
+
+  // Usar el hook de Toast
+  const { showToast } = useToast();
 
   // Cargar datos del localStorage al iniciar
   useEffect(() => {
@@ -63,6 +73,15 @@ export default function RecipeFormPage() {
     }
   }, [recipe]);
 
+  // Funciones para manejar el diálogo de confirmación
+  const openDeleteConfirmation = () => {
+    setConfirmDialog({ isOpen: true });
+  };
+
+  const closeDeleteConfirmation = () => {
+    setConfirmDialog({ isOpen: false });
+  };
+
   // Función para manejar la generación de recetas
   const handleGenerateRecipe = async () => {
     setIsLoading(true);
@@ -71,8 +90,10 @@ export default function RecipeFormPage() {
     try {
       const newRecipe = await generateRecipe(userInput);
       setRecipe(newRecipe);
+      showToast("Receta generada correctamente", "success");
     } catch (err) {
       setError("Error al generar la receta. Por favor intenta nuevamente.");
+      showToast("Error al generar la receta", "error");
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -90,18 +111,20 @@ export default function RecipeFormPage() {
       setRecipe({ ...recipeToSave, isSaved: true });
     }
 
-    // Mostrar un mensaje de éxito
-    alert("¡Receta guardada en Mis Recetas!");
+    // Mostrar notificación de éxito
+    showToast("¡Receta guardada en Mis Recetas!", "success");
   };
 
   // Función para eliminar la receta actual
   const handleDeleteRecipe = () => {
-    if (confirm("¿Estás seguro que deseas eliminar esta receta?")) {
-      // Eliminar la receta actual
-      setRecipe(null);
-      // Eliminar del localStorage
-      localStorage.removeItem(STORAGE_KEYS.CURRENT_RECIPE);
-    }
+    // Eliminar la receta actual
+    setRecipe(null);
+    // Eliminar del localStorage
+    localStorage.removeItem(STORAGE_KEYS.CURRENT_RECIPE);
+    // Cerrar el diálogo
+    closeDeleteConfirmation();
+    // Mostrar notificación
+    showToast("Receta eliminada", "info");
   };
 
   // Comprobar si la receta actual está guardada
@@ -111,6 +134,15 @@ export default function RecipeFormPage() {
 
   return (
     <div className="max-w-6xl mx-auto">
+      {/* Diálogo de confirmación */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title="Eliminar receta"
+        message="¿Estás seguro que deseas eliminar esta receta?"
+        onConfirm={handleDeleteRecipe}
+        onCancel={closeDeleteConfirmation}
+      />
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Columna del formulario */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
@@ -169,7 +201,7 @@ export default function RecipeFormPage() {
                 {recipe && !isLoading && (
                   <div className="absolute top-4 right-4 flex gap-2">
                     <button
-                      onClick={handleDeleteRecipe}
+                      onClick={openDeleteConfirmation}
                       className="text-red-500 hover:text-red-700 bg-white bg-opacity-70 hover:bg-opacity-100 rounded-full p-2 transition-all"
                       aria-label="Eliminar receta"
                     >
@@ -258,5 +290,14 @@ export default function RecipeFormPage() {
         </div>
       )}
     </div>
+  );
+}
+
+// Componente principal envuelto con el ToastProvider
+export default function RecipeFormPage() {
+  return (
+    <ToastProvider>
+      <RecipeFormPageContent />
+    </ToastProvider>
   );
 }
