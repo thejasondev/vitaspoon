@@ -16,13 +16,13 @@ switch (type) {
       '@context': 'https://schema.org',
       '@type': 'WebSite',
       name: data.name || 'VitaSpoon',
-      url: data.url || 'https://vitaspoon.com',
+      url: data.url || 'https://vitaspoon.vercel.app',
       description: data.description || 'Tu asistente de cocina personalizado',
       potentialAction: {
         '@type': 'SearchAction',
         target: {
           '@type': 'EntryPoint',
-          urlTemplate: `${data.url || 'https://vitaspoon.com'}/buscar?q={search_term_string}`
+          urlTemplate: `${data.url || 'https://vitaspoon.vercel.app'}/buscar?q={search_term_string}`
         },
         'query-input': 'required name=search_term_string'
       }
@@ -34,8 +34,8 @@ switch (type) {
       '@context': 'https://schema.org',
       '@type': 'Organization',
       name: data.name || 'VitaSpoon',
-      url: data.url || 'https://vitaspoon.com',
-      logo: data.logo || 'https://vitaspoon.com/logo.png',
+      url: data.url || 'https://vitaspoon.vercel.app',
+      logo: data.logo || 'https://vitaspoon.vercel.app/logo.png',
       sameAs: data.socialProfiles || []
     };
     break;

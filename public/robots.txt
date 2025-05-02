@@ -8,4 +8,4 @@ Disallow: /admin/
 Disallow: /private/
 
 # Sitemap location
-Sitemap: https://vitaspoon.com/sitemap.xml 
+Sitemap: https://vitaspoon.vercel.app/sitemap.xml 
