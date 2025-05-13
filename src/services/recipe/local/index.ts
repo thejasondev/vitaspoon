@@ -1,6 +1,6 @@
 import type { Recipe, UserInput } from "../../../types/recipe";
 import { generateId } from "../../storage/storageService";
-import { LOCAL_RECIPES } from "../../../constants/recipes";
+import { getAllRecipes } from "../../../constants/recipes";
 import { DEFAULT_VALUES } from "./types";
 import { identifyProteinIngredients } from "./ingredientService";
 import { createCustomRecipe, createFallbackRecipe } from "./recipeGenerator";
@@ -10,6 +10,7 @@ import {
   scoreRecipesByIngredientMatch,
   sortRecipesByRelevance,
   customizeRecipeWithUserIngredients,
+  recipeContainsAllUserIngredients,
 } from "./recipeMatchingService";
 import { getLocalRecipesWhenAIUnavailable } from "./recipeMatchingService";
 
@@ -27,6 +28,103 @@ export const generateLocalRecipe = async (
   const availableIngredients = userInput.availableIngredients || [];
 
   try {
+    // Cargar recetas combinadas (CSV + locales)
+    const allRecipes = await getAllRecipes();
+    console.log(
+      `📊 Base de datos cargada: ${allRecipes.length} recetas disponibles (CSV + locales)`
+    );
+
+    // Paso 1: Buscar recetas que contengan TODOS los ingredientes especificados
+    if (availableIngredients.length > 0) {
+      console.log(
+        `🥘 Buscando recetas con los ingredientes: ${availableIngredients.join(
+          ", "
+        )}`
+      );
+
+      // Filtrar recetas que contengan TODOS los ingredientes especificados
+      const exactMatches = allRecipes.filter((recipe) =>
+        recipeContainsAllUserIngredients(recipe, availableIngredients)
+      );
+
+      if (exactMatches.length > 0) {
+        console.log(
+          `✅ Encontradas ${exactMatches.length} recetas con TODOS los ingredientes especificados`
+        );
+
+        // Verificación adicional para debug - mostrar las primeras 3 recetas encontradas
+        exactMatches.slice(0, 3).forEach((recipe, index) => {
+          console.log(`📝 Receta #${index + 1}: ${recipe.title}`);
+          console.log(
+            `   Ingredientes: ${recipe.ingredients
+              .map((ing) => ing.name)
+              .join(", ")}`
+          );
+        });
+
+        // Aplicar otros filtros (tipo de cocina, etc.)
+        let filteredExactMatches = exactMatches;
+
+        // Filtrar por tipo de cocina si se especificó
+        if (cuisineType) {
+          const matchesWithCuisine = filteredExactMatches.filter(
+            (recipe) => recipe.cuisineType === cuisineType
+          );
+
+          if (matchesWithCuisine.length > 0) {
+            filteredExactMatches = matchesWithCuisine;
+            console.log(
+              `✅ Filtradas ${matchesWithCuisine.length} recetas por tipo de cocina: ${cuisineType}`
+            );
+          }
+        }
+
+        // Aplicar filtros adicionales con modo flexible para no ser demasiado restrictivos
+        const finalMatches = filterRecipesByUserPreferences(
+          filteredExactMatches,
+          userInput,
+          false
+        );
+
+        if (finalMatches.length > 0) {
+          console.log(
+            `✅ Encontradas ${finalMatches.length} recetas finales tras aplicar todos los filtros`
+          );
+
+          // Seleccionar una receta aleatoria entre las mejores coincidencias
+          const recipeIndex = Math.floor(
+            Math.random() * Math.min(3, finalMatches.length)
+          );
+          const selectedRecipe = finalMatches[recipeIndex];
+
+          console.log(`✨ Seleccionada receta: ${selectedRecipe.title}`);
+          console.log(
+            `   Ingredientes: ${selectedRecipe.ingredients
+              .map((ing) => ing.name)
+              .join(", ")}`
+          );
+
+          // Personalizar la receta con ingredientes del usuario
+          const customizedRecipe = customizeRecipeWithUserIngredients(
+            selectedRecipe,
+            availableIngredients
+          );
+
+          return {
+            ...customizedRecipe,
+            id: generateId(),
+            createdAt: new Date().toISOString(),
+            cuisineType: cuisineType || customizedRecipe.cuisineType,
+            source: "csv_database", // Indicar que viene de la base de datos CSV
+          };
+        }
+      } else {
+        console.log(
+          `⚠️ No se encontraron recetas con TODOS los ingredientes especificados`
+        );
+      }
+    }
+
     // Identificar ingredientes proteicos importantes (cerdo, pollo, res, etc.)
     const proteinIngredients = identifyProteinIngredients(availableIngredients);
 
@@ -40,7 +138,7 @@ export const generateLocalRecipe = async (
 
       // Buscar recetas que coincidan con las proteínas especificadas
       candidateRecipes = findRecipesWithProteins(
-        LOCAL_RECIPES,
+        allRecipes,
         proteinIngredients,
         cuisineType
       );
@@ -55,7 +153,7 @@ export const generateLocalRecipe = async (
     // Si no hay recetas con proteínas específicas o no se especificaron proteínas
     if (candidateRecipes.length === 0) {
       // Filtrar recetas que coincidan con el tipo de comida
-      const exactCuisineTypeRecipes = LOCAL_RECIPES.filter(
+      const exactCuisineTypeRecipes = allRecipes.filter(
         (recipe) => recipe.cuisineType === cuisineType
       );
 
@@ -66,7 +164,7 @@ export const generateLocalRecipe = async (
 
         // Usar la nueva función para obtener recetas con filtrado menos estricto
         const alternativeRecipes = getLocalRecipesWhenAIUnavailable(
-          LOCAL_RECIPES,
+          allRecipes,
           userInput
         );
 
@@ -117,6 +215,24 @@ export const generateLocalRecipe = async (
       // Ordenar por mejor coincidencia
       const sortedRecipes = sortRecipesByRelevance(scoredRecipes);
 
+      // Verificación de DEBUG: mostrar si las recetas tienen todos los ingredientes
+      sortedRecipes.slice(0, 3).forEach((scored, index) => {
+        console.log(`🔍 Receta puntuada #${index + 1}: ${scored.recipe.title}`);
+        console.log(
+          `   Tiene todos los ingredientes: ${
+            scored.hasAllIngredients ? "Sí" : "No"
+          }`
+        );
+        console.log(
+          `   Coincidencia: ${scored.matchingCount}/${scored.recipe.ingredients.length} ingredientes`
+        );
+        console.log(
+          `   Ingredientes: ${scored.recipe.ingredients
+            .map((ing) => ing.name)
+            .join(", ")}`
+        );
+      });
+
       // Si hay recetas con buena coincidencia, usarlas
       if (sortedRecipes.length > 0 && sortedRecipes[0].matchingCount >= 1) {
         matchingRecipes = sortedRecipes.map((item) => item.recipe);
@@ -134,7 +250,7 @@ export const generateLocalRecipe = async (
 
       // Usar la función de búsqueda alternativa
       const localRecipes = getLocalRecipesWhenAIUnavailable(
-        LOCAL_RECIPES,
+        allRecipes,
         userInput
       );
 
@@ -154,6 +270,22 @@ export const generateLocalRecipe = async (
       Math.random() * Math.min(3, matchingRecipes.length)
     );
     const selectedRecipe = matchingRecipes[recipeIndex];
+
+    // Verificación final para asegurar que se cumple el requisito de ingredientes
+    const hasAllIngredients = recipeContainsAllUserIngredients(
+      selectedRecipe,
+      availableIngredients
+    );
+
+    console.log(`✨ Seleccionada receta: ${selectedRecipe.title}`);
+    console.log(
+      `   Contiene todos los ingredientes: ${hasAllIngredients ? "Sí" : "No"}`
+    );
+    console.log(
+      `   Ingredientes: ${selectedRecipe.ingredients
+        .map((ing) => ing.name)
+        .join(", ")}`
+    );
 
     // Personalizar la receta con ingredientes del usuario
     const customizedRecipe = customizeRecipeWithUserIngredients(

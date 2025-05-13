@@ -1,15 +1,15 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import AppLayout from '../layouts/AppLayout.astro';
 import HeroSection from '../components/common/HeroSection.astro';
 import HowItWorksSection from '../components/common/HowItWorksSection.astro';
 // Eliminamos importaciones de componentes de receta y tipos no necesarios aquí
 ---
 
-<Layout 
+<AppLayout 
   title="VitaSpoon | Tu asistente de cocina personalizado"
   description="Genera recetas personalizadas basadas en tus preferencias, restricciones dietéticas e ingredientes disponibles. Cocina saludable y delicioso con VitaSpoon."
   image="/images/VitaSpoon.png"
 >
 	<HeroSection />
 	<HowItWorksSection />
-</Layout>
+</AppLayout>

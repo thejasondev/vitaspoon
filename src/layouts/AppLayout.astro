@@ -1,0 +1,31 @@
+---
+import Layout from "./Layout.astro";
+import { ToastProvider, RecipeDbProvider } from "../components/providers";
+
+interface Props {
+	title?: string;
+	description?: string;
+	image?: string;
+	canonicalURL?: string;
+}
+
+const { 
+	title,
+	description,
+	image,
+	canonicalURL
+} = Astro.props;
+---
+
+<Layout 
+  title={title}
+  description={description}
+  image={image}
+  canonicalURL={canonicalURL}
+>
+  <RecipeDbProvider client:load>
+    <ToastProvider client:load>
+      <slot />
+    </ToastProvider>
+  </RecipeDbProvider>
+</Layout> 

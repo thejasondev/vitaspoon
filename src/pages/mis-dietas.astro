@@ -1,13 +1,13 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import AppLayout from '../layouts/AppLayout.astro';
 import DietasSection from '../components/sections/DietasSection.astro';
 // Eliminamos importaciones de componentes de receta y tipos no necesarios aquí
 ---
 
-<Layout 
-  title="Mis Recetas Personalizadas | VitaSpoon"
-  description="Gestiona tus recetas guardadas según tus objetivos nutricionales, preferencias y restricciones alimentarias. Recetas adaptadas a tu estilo de vida."
+<AppLayout 
+  title="Mis Dietas Personalizadas | VitaSpoon"
+  description="Gestiona tus dietas guardadas según tus objetivos nutricionales, preferencias y restricciones alimentarias. Dietas adaptadas a tu estilo de vida."
   image="/images/VitaSpoon.png"
 >
-<DietasSection />
-</Layout> 
+	<DietasSection />
+</AppLayout> 

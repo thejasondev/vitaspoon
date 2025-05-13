@@ -4,6 +4,7 @@ import Navbar from '../components/common/Navbar.astro';
 import Footer from '../components/common/Footer.astro';
 import StructuredData from '../components/common/StructuredData.astro';
 import Analytics from '../components/seo/Analytics.astro';
+import { VpnNotice } from '../components/ui';
 
 interface Props {
 	title?: string;
@@ -103,6 +104,7 @@ const organizationData = {
 			<slot />
 		</main>
 		<Footer />
+		<VpnNotice client:load />
 	</body>
 </html>
 

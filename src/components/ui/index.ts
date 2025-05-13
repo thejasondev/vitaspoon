@@ -1,9 +1,22 @@
 // Exportación de componentes UI
-export { default as AllergySelector } from "./AllergySelector";
-export { default as CustomSelect } from "./CustomSelect";
-export { default as ElectricityOptions } from "./ElectricityOptions";
-export { default as IngredientManager } from "./IngredientManager";
-export { default as RecipeDisplay } from "./RecipeDisplay";
-export { default as GenerateButton } from "./GenerateButton";
-export { default as Toast } from "./Toast";
-export { default as ConfirmDialog } from "./ConfirmDialog";
+import RecipeDisplay from "./RecipeDisplay";
+import AllergySelector from "./AllergySelector";
+import GenerateButton from "./GenerateButton";
+import IngredientManager from "./IngredientManager";
+import ElectricityOptions from "./ElectricityOptions";
+import CustomSelect from "./CustomSelect";
+import ConfirmDialog from "./ConfirmDialog";
+import Toast from "./Toast";
+import VpnNotice from "./VpnNotice";
+
+export {
+  RecipeDisplay,
+  AllergySelector,
+  GenerateButton,
+  IngredientManager,
+  ElectricityOptions,
+  CustomSelect,
+  ConfirmDialog,
+  Toast,
+  VpnNotice,
+};

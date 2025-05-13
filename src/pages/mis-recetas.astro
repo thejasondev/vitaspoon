@@ -1,13 +1,23 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import DietasSection from '../components/sections/DietasSection.astro';
+import AppLayout from '../layouts/AppLayout.astro';
+import { SavedRecipesPage } from '../components/pages';
 // Eliminamos importaciones de componentes de receta y tipos no necesarios aquí
 ---
 
-<Layout 
-  title="Mis Recetas Personalizadas | VitaSpoon"
-  description="Gestiona tus recetas guardadas según tus objetivos nutricionales, preferencias y restricciones alimentarias. Recetas adaptadas a tu estilo de vida."
+<AppLayout 
+  title="Mis Recetas Guardadas | VitaSpoon"
+  description="Accede a todas tus recetas guardadas en un solo lugar. Organiza y consulta tus creaciones favoritas de VitaSpoon."
   image="/images/VitaSpoon.png"
 >
-<DietasSection />
-</Layout> 
+	<section class="mt-20 py-12 px-4 max-w-7xl mx-auto">
+    <div class="text-center mb-10">
+      <h1 class="text-4xl md:text-5xl font-bold text-green-700 mb-4">Mis Recetas Guardadas</h1>
+      <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+        Todas tus recetas guardadas en un solo lugar. Consulta, cocina y disfruta 
+        de tus creaciones favoritas cuando quieras.
+      </p>
+    </div>
+
+    <SavedRecipesPage client:load />
+  </section>
+</AppLayout> 

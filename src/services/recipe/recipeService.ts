@@ -2,6 +2,24 @@ import type { Recipe, UserInput } from "../../types/recipe";
 import { generateId } from "../storage/storageService";
 import { API_MESSAGES } from "../../constants/apiConfig";
 import { generateRecipeWithBestAI } from "../ai/aiRecipeService";
+import { getAllRecipes } from "../../constants/recipes";
+
+/**
+ * Inicializa la base de datos de recetas, precargando el CSV
+ * Esta función se debe llamar al inicio de la aplicación
+ */
+export const initRecipeDatabase = async (): Promise<void> => {
+  try {
+    console.log("🍽️ Inicializando base de datos de recetas...");
+
+    // Esta llamada hará que se cargue y procese el CSV si no se ha hecho antes
+    const recipes = await getAllRecipes();
+
+    console.log(`✅ Base de datos inicializada con ${recipes.length} recetas`);
+  } catch (error) {
+    console.error("Error al inicializar base de datos de recetas:", error);
+  }
+};
 
 /**
  * Genera una receta basada en las preferencias del usuario
