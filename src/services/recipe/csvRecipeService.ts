@@ -18,6 +18,10 @@ interface CSVRecipe {
   // Añadir más campos según la estructura del CSV
 }
 
+// Cache para almacenar las recetas ya procesadas
+let recipesCache: Recipe[] | null = null;
+let processingPromise: Promise<Recipe[]> | null = null;
+
 /**
  * Convierte una receta del formato CSV al formato interno de Recipe
  */
@@ -136,60 +140,98 @@ export const convertCSVToRecipe = (csvRecipe: CSVRecipe): Recipe => {
 
 /**
  * Procesa el archivo CSV y devuelve un array de recetas
+ * Implementa cache para evitar reprocesar el mismo archivo
  */
 export const parseCSVFile = async (filePath: string): Promise<Recipe[]> => {
+  // Si ya tenemos las recetas en caché, devolverlas inmediatamente
+  if (recipesCache) {
+    return recipesCache;
+  }
+
+  // Si ya hay una operación de procesamiento en curso, esperar a que termine
+  if (processingPromise) {
+    return processingPromise;
+  }
+
   try {
     console.log("🔄 Procesando archivo CSV de recetas...");
 
-    // Cargar el archivo
-    const response = await fetch(filePath);
-    const csvText = await response.text();
+    // Crear una promesa que podamos reutilizar si se hacen múltiples llamadas durante el procesamiento
+    processingPromise = (async () => {
+      try {
+        // Cargar el archivo
+        const response = await fetch(filePath);
+        const csvText = await response.text();
 
-    // Parsear el CSV
-    return new Promise((resolve, reject) => {
-      Papa.parse(csvText, {
-        header: true,
-        skipEmptyLines: true,
-        complete: (results: any) => {
-          console.log(
-            `✅ CSV procesado correctamente. ${results.data.length} recetas encontradas.`
-          );
+        // Parsear el CSV
+        return new Promise<Recipe[]>((resolve, reject) => {
+          Papa.parse(csvText, {
+            header: true,
+            skipEmptyLines: true,
+            complete: (results: any) => {
+              console.log(
+                `✅ CSV procesado correctamente. ${results.data.length} recetas encontradas.`
+              );
 
-          // Convertir cada fila a formato Recipe con manejo de errores
-          const recipes: Recipe[] = [];
+              // Convertir cada fila a formato Recipe con manejo de errores
+              const recipes: Recipe[] = [];
 
-          for (const item of results.data) {
-            try {
-              const recipe = convertCSVToRecipe(item as CSVRecipe);
-              recipes.push(recipe);
-            } catch (error) {
-              console.warn("Error convirtiendo receta del CSV:", error);
-              // Continuar con la siguiente receta
-            }
-          }
+              for (const item of results.data) {
+                try {
+                  const recipe = convertCSVToRecipe(item as CSVRecipe);
+                  recipes.push(recipe);
+                } catch (error) {
+                  console.warn("Error convirtiendo receta del CSV:", error);
+                  // Continuar con la siguiente receta
+                }
+              }
 
-          console.log(
-            `✅ Se convirtieron ${recipes.length} recetas correctamente`
-          );
-          resolve(recipes);
-        },
-        error: (error: Error) => {
-          console.error("Error al procesar CSV:", error);
-          reject(error);
-        },
-      });
-    });
+              console.log(
+                `✅ Se convirtieron ${recipes.length} recetas correctamente`
+              );
+
+              // Guardar en caché para futuras llamadas
+              recipesCache = recipes;
+
+              resolve(recipes);
+            },
+            error: (error: Error) => {
+              console.error("Error al procesar CSV:", error);
+              reject(error);
+            },
+          });
+        });
+      } catch (error) {
+        console.error("Error cargando archivo CSV:", error);
+        throw error;
+      }
+    })();
+
+    return await processingPromise;
   } catch (error) {
     console.error("Error cargando archivo CSV:", error);
+    processingPromise = null; // Resetear la promesa para permitir reintentos
     throw error;
+  } finally {
+    // Limpiar la referencia a la promesa cuando termine
+    processingPromise = null;
   }
 };
+
+// Cache para loadAndCombineRecipes
+let combinedRecipesCache: Recipe[] | null = null;
 
 /**
  * Carga las recetas desde el CSV y las combina con las recetas locales existentes
  * dando prioridad a las recetas del CSV
+ * Implementa caché para mejorar rendimiento
  */
 export const loadAndCombineRecipes = async (): Promise<Recipe[]> => {
+  // Si ya tenemos las recetas combinadas en caché, devolverlas inmediatamente
+  if (combinedRecipesCache) {
+    return combinedRecipesCache;
+  }
+
   try {
     // Cargar recetas CSV
     const csvRecipes = await parseCSVFile("/data/train.csv");
@@ -214,6 +256,9 @@ export const loadAndCombineRecipes = async (): Promise<Recipe[]> => {
     console.log(
       `🍽️ Base de datos combinada: ${combinedRecipes.length} recetas (${csvRecipes.length} de CSV, ${uniqueLocalRecipes.length} locales)`
     );
+
+    // Guardar en caché para futuras llamadas
+    combinedRecipesCache = combinedRecipes;
 
     return combinedRecipes;
   } catch (error) {

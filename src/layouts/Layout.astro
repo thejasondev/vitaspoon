@@ -38,6 +38,11 @@ const organizationData = {
 		"https://instagram.com/vitaspoon"
 	]
 };
+
+// Recursos críticos para precargar
+const criticalResources = [
+	{ rel: 'preload', href: '/images/VitaSpoon.png', as: 'image' }
+];
 ---
 
 <!doctype html>
@@ -91,8 +96,16 @@ const organizationData = {
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 		
-		<!-- Remixicon para iconos -->
-		<link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet" />
+		<!-- Precargar recursos críticos -->
+		{criticalResources.map(resource => (
+			<link rel={resource.rel} href={resource.href} as={resource.as} />
+		))}
+		
+		<!-- Remixicon para iconos - cargado con prioridad baja -->
+		<link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet" media="print" onload="this.media='all'" />
+		<noscript>
+			<link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet" />
+		</noscript>
 		
 		<!-- Structured Data -->
 		<StructuredData type="WebSite" data={websiteData} />
@@ -104,7 +117,7 @@ const organizationData = {
 			<slot />
 		</main>
 		<Footer />
-		<VpnNotice client:load />
+		<VpnNotice client:idle />
 	</body>
 </html>
 

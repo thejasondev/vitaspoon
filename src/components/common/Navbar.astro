@@ -118,96 +118,102 @@ const navLinks = [
 <div class="h-16"></div>
 
 <script>
-  // Script para el toggle del menú móvil con animación
+  // Script optimizado para el toggle del menú móvil
   document.addEventListener('DOMContentLoaded', () => {
+    // Seleccionar elementos una sola vez y guardarlos en variables
     const menuToggle = document.getElementById('menu-toggle');
     const mobileMenu = document.getElementById('mobile-menu');
     const navbar = document.getElementById('navbar');
     const bar1 = document.getElementById('bar1');
     const bar2 = document.getElementById('bar2');
     const bar3 = document.getElementById('bar3');
+    
+    if (!menuToggle || !mobileMenu || !bar1 || !bar2 || !bar3 || !navbar) return;
+    
     let isOpen = false;
     let lastScrollTop = 0;
+    let scrollThrottleTimeout: number | null = null;
     
-    if (menuToggle && mobileMenu && bar1 && bar2 && bar3 && navbar) {
-      // Gestión del menú móvil
-      const toggleMenu = () => {
-        isOpen = !isOpen;
-        
-        // Actualiza atributo aria-expanded para accesibilidad
-        menuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-        mobileMenu.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
-        
-        // Anima las barras para formar una X
-        if (isOpen) {
-          // Transformar a X
-          bar1.style.transform = 'rotate(45deg)';
-          bar1.style.top = '50%';
-          bar1.style.marginTop = '-1px';
-          
-          bar2.style.opacity = '0';
-          
-          bar3.style.transform = 'rotate(-45deg)';
-          bar3.style.bottom = '50%';
-          bar3.style.marginBottom = '-1px';
-          
-          // Abre el menú
-          document.body.style.overflow = 'hidden'; // Previene scroll
-          mobileMenu.classList.remove('translate-x-full');
-          mobileMenu.classList.add('translate-x-0');
-          
-          // Asegura que la navbar esté visible cuando el menú está abierto
-          navbar.classList.remove('-translate-y-full');
-        } else {
-          // Volver a barras
-          bar1.style.transform = 'rotate(0)';
-          bar1.style.top = '20%';
-          bar1.style.marginTop = '0';
-          
-          bar2.style.opacity = '1';
-          
-          bar3.style.transform = 'rotate(0)';
-          bar3.style.bottom = '20%';
-          bar3.style.marginBottom = '0';
-          
-          // Cierra el menú
-          document.body.style.overflow = '';
-          mobileMenu.classList.remove('translate-x-0');
-          mobileMenu.classList.add('translate-x-full');
-        }
-      };
+    // Función para alternar el menú móvil
+    const toggleMenu = () => {
+      isOpen = !isOpen;
       
-      // Toggle al hacer clic en el botón
-      menuToggle.addEventListener('click', toggleMenu);
+      // Actualiza atributo aria-expanded para accesibilidad
+      menuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      mobileMenu.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
       
-      // Cierra menú al hacer clic en un enlace
-      const menuLinks = mobileMenu.querySelectorAll('a');
-      menuLinks.forEach(link => {
-        link.addEventListener('click', () => {
-          if (isOpen) toggleMenu();
-        });
+      // Anima las barras para formar una X
+      if (isOpen) {
+        // Transformar a X
+        bar1.style.transform = 'rotate(45deg)';
+        bar1.style.top = '50%';
+        bar1.style.marginTop = '-1px';
+        
+        bar2.style.opacity = '0';
+        
+        bar3.style.transform = 'rotate(-45deg)';
+        bar3.style.bottom = '50%';
+        bar3.style.marginBottom = '-1px';
+        
+        // Abre el menú
+        document.body.style.overflow = 'hidden'; // Previene scroll
+        mobileMenu.classList.remove('translate-x-full');
+        mobileMenu.classList.add('translate-x-0');
+        
+        // Asegura que la navbar esté visible cuando el menú está abierto
+        navbar.classList.remove('-translate-y-full');
+      } else {
+        // Volver a barras
+        bar1.style.transform = 'rotate(0)';
+        bar1.style.top = '20%';
+        bar1.style.marginTop = '0';
+        
+        bar2.style.opacity = '1';
+        
+        bar3.style.transform = 'rotate(0)';
+        bar3.style.bottom = '20%';
+        bar3.style.marginBottom = '0';
+        
+        // Cierra el menú
+        document.body.style.overflow = '';
+        mobileMenu.classList.remove('translate-x-0');
+        mobileMenu.classList.add('translate-x-full');
+      }
+    };
+    
+    // Toggle al hacer clic en el botón
+    menuToggle.addEventListener('click', toggleMenu);
+    
+    // Cierra menú al hacer clic en un enlace
+    const menuLinks = mobileMenu.querySelectorAll('a');
+    menuLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        if (isOpen) toggleMenu();
       });
+    });
+    
+    // Cierra menú al presionar Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isOpen) toggleMenu();
+    });
+    
+    // Manejo del scroll para ocultar/mostrar la navbar con throttling
+    window.addEventListener('scroll', () => {
+      // No aplicar esto cuando el menú está abierto
+      if (isOpen) return;
       
-      // Cierra menú al presionar Escape
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && isOpen) toggleMenu();
-      });
+      // Usar throttling para mejorar el rendimiento
+      if (scrollThrottleTimeout) return;
       
-      // Manejo del scroll para ocultar/mostrar la navbar
-      window.addEventListener('scroll', () => {
-        // No aplicar esto cuando el menú está abierto
-        if (isOpen) return;
-        
+      scrollThrottleTimeout = window.setTimeout(() => {
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         
         // Si estamos al inicio de la página, siempre mostrar la navbar
         if (scrollTop <= 50) {
           navbar.classList.remove('-translate-y-full');
-          return;
-        }
-        
+        } 
         // Ocultar al hacer scroll hacia abajo, mostrar al hacer scroll hacia arriba
-        if (scrollTop > lastScrollTop) {
+        else if (scrollTop > lastScrollTop) {
           // Scroll hacia abajo
           navbar.classList.add('-translate-y-full');
         } else {
@@ -217,7 +223,8 @@ const navLinks = [
         
         // Guardar la posición actual para la siguiente vez
         lastScrollTop = scrollTop;
-      }, { passive: true }); // Usar passive para mejor rendimiento
-    }
+        scrollThrottleTimeout = null;
+      }, 100); // 100ms throttle
+    }, { passive: true });
   });
 </script>

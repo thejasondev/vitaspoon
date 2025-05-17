@@ -20,5 +20,30 @@ export default defineConfig({
   ],
   vite: {
     envPrefix: ["OPENAI_", "GEMINI_", "DEEPSEEK_"],
+    // Optimizaciones de Vite para mejorar el rendimiento
+    build: {
+      // Optimizar el tamaño del bundle
+      cssCodeSplit: true,
+      minify: "terser",
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            // Separar las dependencias grandes en chunks separados
+            react: ["react", "react-dom"],
+            papaparse: ["papaparse"],
+          },
+        },
+      },
+    },
+    // Optimizar el tiempo de carga en desarrollo
+    optimizeDeps: {
+      include: ["react", "react-dom", "papaparse"],
+    },
+    // Mejorar el rendimiento del servidor de desarrollo
+    server: {
+      hmr: {
+        overlay: false, // Desactivar overlay para mejorar rendimiento
+      },
+    },
   },
 });

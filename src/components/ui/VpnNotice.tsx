@@ -3,8 +3,6 @@ import React, { useState, useEffect } from "react";
 export default function VpnNotice() {
   const [isVisible, setIsVisible] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [hasShownInitialAnimation, setHasShownInitialAnimation] =
-    useState(false);
 
   const handleClose = () => {
     // Guardar preferencia en localStorage para no mostrar por un tiempo
@@ -17,29 +15,34 @@ export default function VpnNotice() {
   };
 
   useEffect(() => {
-    // Comprobar si el aviso fue descartado recientemente
-    const dismissedTime = localStorage.getItem("vpnNoticeDismissed");
-    if (dismissedTime) {
-      const dismissedDate = new Date(dismissedTime);
-      const now = new Date();
-      // No mostrar si fue cerrado en los últimos 7 días
-      if (now.getTime() - dismissedDate.getTime() < 7 * 24 * 60 * 60 * 1000) {
-        return;
+    // Usar un requestIdleCallback o setTimeout para ejecutar código no crítico
+    // cuando el navegador esté inactivo, mejorando el rendimiento de navegación
+    const checkDismissalStatus = () => {
+      // Comprobar si el aviso fue descartado recientemente
+      const dismissedTime = localStorage.getItem("vpnNoticeDismissed");
+      if (dismissedTime) {
+        const dismissedDate = new Date(dismissedTime);
+        const now = new Date();
+        // No mostrar si fue cerrado en los últimos 7 días
+        if (now.getTime() - dismissedDate.getTime() < 7 * 24 * 60 * 60 * 1000) {
+          return;
+        }
       }
-    }
 
-    // Añadir un pequeño retraso para no interrumpir la carga de la página
-    const timer = setTimeout(() => {
+      // Mostrar el aviso
       setIsVisible(true);
+    };
 
-      // Después de un breve momento, asegurarse de que está desplegada
-      setTimeout(() => {
-        setIsMinimized(false);
-        setHasShownInitialAnimation(true);
-      }, 500);
-    }, 1500);
-
-    return () => clearTimeout(timer);
+    // Usar requestIdleCallback si está disponible, o setTimeout como fallback
+    if ("requestIdleCallback" in window) {
+      // TypeScript no reconoce requestIdleCallback por defecto
+      (window as any).requestIdleCallback(() => {
+        checkDismissalStatus();
+      });
+    } else {
+      // Fallback a setTimeout con un retraso más largo para no bloquear la navegación
+      setTimeout(checkDismissalStatus, 2000);
+    }
   }, []);
 
   if (!isVisible) return null;

@@ -23,8 +23,8 @@ const {
   image={image}
   canonicalURL={canonicalURL}
 >
-  <RecipeDbProvider client:load>
-    <ToastProvider client:load>
+  <RecipeDbProvider client:idle>
+    <ToastProvider client:idle>
       <slot />
     </ToastProvider>
   </RecipeDbProvider>

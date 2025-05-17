@@ -4,20 +4,42 @@ import { API_MESSAGES } from "../../constants/apiConfig";
 import { generateRecipeWithBestAI } from "../ai/aiRecipeService";
 import { getAllRecipes } from "../../constants/recipes";
 
+// Variable para controlar si la base de datos ya se está inicializando
+let isInitializing = false;
+let recipesPromise: Promise<Recipe[]> | null = null;
+
 /**
  * Inicializa la base de datos de recetas, precargando el CSV
  * Esta función se debe llamar al inicio de la aplicación
+ * Implementa lazy loading y memorización para evitar cargas repetidas
  */
 export const initRecipeDatabase = async (): Promise<void> => {
+  // Si ya hay una inicialización en curso, usar esa promesa
+  if (recipesPromise) {
+    await recipesPromise;
+    return;
+  }
+
+  // Si ya está inicializando, no hacer nada
+  if (isInitializing) return;
+
   try {
+    isInitializing = true;
     console.log("🍽️ Inicializando base de datos de recetas...");
 
-    // Esta llamada hará que se cargue y procese el CSV si no se ha hecho antes
-    const recipes = await getAllRecipes();
+    // Crear una promesa que se puede reutilizar
+    recipesPromise = getAllRecipes();
+
+    // Esperar a que se resuelva
+    const recipes = await recipesPromise;
 
     console.log(`✅ Base de datos inicializada con ${recipes.length} recetas`);
   } catch (error) {
     console.error("Error al inicializar base de datos de recetas:", error);
+    // Resetear la promesa en caso de error para permitir reintentos
+    recipesPromise = null;
+  } finally {
+    isInitializing = false;
   }
 };
 

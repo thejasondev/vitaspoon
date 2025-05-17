@@ -37,7 +37,7 @@ export default function ElectricityOptions({
         </svg>
         <span className="relative z-10">Disponibilidad de Electricidad</span>
         <span className="ml-2 text-xs bg-yellow-200 text-yellow-800 px-2 py-1 rounded-full">
-          Importante para Cuba
+          Importante!
         </span>
       </label>
 
