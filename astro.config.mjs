@@ -24,7 +24,7 @@ export default defineConfig({
     build: {
       // Optimizar el tamaño del bundle
       cssCodeSplit: true,
-      minify: "terser",
+      minify: "esbuild",
       rollupOptions: {
         output: {
           manualChunks: {
