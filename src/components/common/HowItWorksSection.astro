@@ -1,8 +1,9 @@
 ---
 import Card from './Card.astro';
+import Button from '../ui/Button.astro';
 ---
 
-<section id="how-it-works" class="relative py-16 sm:py-24 overflow-hidden">
+<section id="how-it-works" class="relative py-16 sm:py-24 overflow-hidden" transition:animate="fade">
   <!-- Fondos y decoraciones con diseño más moderno -->
   <div class="absolute inset-0 bg-gradient-to-br from-emerald-50 to-green-100 opacity-70"></div>
   <div class="absolute top-0 left-0 w-32 h-32 bg-emerald-300 rounded-full -translate-x-1/2 -translate-y-1/2 opacity-20 blur-xl"></div>
@@ -142,25 +143,33 @@ import Card from './Card.astro';
     </div>
     
     <div class="text-center mt-12 md:mt-16">
-      <a href="/recetas" class="inline-flex items-center justify-center bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-medium py-3 px-8 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5">
-        <span>Probar ahora</span>
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+      <Button href="/recetas" size="lg" icon={true} iconPosition="right">
+        Probar ahora
+        <svg slot="icon-right" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
         </svg>
-      </a>
+      </Button>
     </div>
   </div>
 </section>
 
 <script>
-  // Animación mejorada para los elementos
-  document.addEventListener('DOMContentLoaded', () => {
+  // Función para animar las tarjetas
+  function animateStepCards() {
+    // Remueve la clase animate-fade-in de todas las tarjetas
+    const allStepCards = document.querySelectorAll('.step-card');
+    allStepCards.forEach(card => {
+      card.classList.remove('animate-fade-in');
+      card.classList.add('opacity-0');
+    });
+    
     // Animación para móvil
     if (window.innerWidth < 768) {
       const stepCards = document.querySelectorAll('.step-card');
       const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
+            entry.target.classList.remove('opacity-0');
             entry.target.classList.add('animate-fade-in');
             observer.unobserve(entry.target);
           }
@@ -173,17 +182,29 @@ import Card from './Card.astro';
         }, 100 * index);
       });
     }
-    
     // Animación para desktop
     else {
       const stepCards = document.querySelectorAll('.step-card');
       stepCards.forEach((card, index) => {
         setTimeout(() => {
+          card.classList.remove('opacity-0');
           card.classList.add('animate-fade-in');
         }, 150 * index);
       });
     }
-  });
+  }
+
+  // Inicializar las animaciones cuando el DOM esté listo
+  document.addEventListener('DOMContentLoaded', animateStepCards);
+  
+  // Inicializar también cuando hay transiciones de página con Astro
+  document.addEventListener('astro:page-load', animateStepCards);
+  
+  // Reinicializar cuando la página termina de cargarse
+  window.addEventListener('load', animateStepCards);
+  
+  // Reinicializar cuando hay actualización parcial del DOM
+  document.addEventListener('astro:after-swap', animateStepCards);
 </script>
 
 <style>
@@ -199,9 +220,12 @@ import Card from './Card.astro';
   }
   
   .step-card {
-    opacity: 0;
     transform: translateY(20px);
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  
+  .opacity-0 {
+    opacity: 0;
   }
   
   .animate-fade-in {
@@ -237,5 +261,17 @@ import Card from './Card.astro';
   /* Mejora de hover para las tarjetas */
   .step-card > div:hover {
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+
+  /* Asegurar que los elementos estén visibles después de las transiciones */
+  ::view-transition-new(root) .step-card {
+    animation: none;
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  ::view-transition-new(root) .step-marker {
+    animation: none;
+    opacity: 1;
   }
 </style> 

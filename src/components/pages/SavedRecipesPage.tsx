@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import type { Recipe } from "../../types/recipe";
-import { RecipeDisplay, ConfirmDialog } from "../ui";
+import { RecipeDisplay, ConfirmDialog, ButtonReact } from "../ui";
 import { storageService } from "../../services/storage/storageService";
 import { ToastProvider } from "../../contexts/ToastContext";
 import { useToast } from "../../contexts/ToastContext";
@@ -68,7 +68,7 @@ function SavedRecipesPageContent() {
     }
 
     // Mostrar notificación
-    showToast("Receta eliminada correctamente", "info");
+    showToast(`Receta "${confirmDialog.recipeName}" eliminada`, "error");
 
     // Cerrar el diálogo
     closeDeleteConfirmation();
@@ -114,12 +114,9 @@ function SavedRecipesPageContent() {
             Crea recetas personalizadas y guárdalas para construir tu plan de
             alimentación.
           </p>
-          <a
-            href="/recetas"
-            className="inline-block px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-          >
+          <ButtonReact href="/recetas" variant="primary" size="md">
             Crear Recetas
-          </a>
+          </ButtonReact>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">

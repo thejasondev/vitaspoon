@@ -1,0 +1,77 @@
+---
+interface Props {
+  href?: string;
+  type?: "button" | "submit" | "reset";
+  className?: string;
+  variant?: "primary" | "secondary" | "outline";
+  size?: "sm" | "md" | "lg";
+  icon?: boolean;
+  iconPosition?: "left" | "right";
+  fullWidth?: boolean;
+}
+
+const {
+  href,
+  type = "button",
+  className = "",
+  variant = "primary",
+  size = "md",
+  icon = false,
+  iconPosition = "right",
+  fullWidth = false,
+  ...rest
+} = Astro.props;
+
+// Base classes compartidas
+const baseClasses = "font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 inline-flex items-center justify-center";
+
+// Variantes de estilo
+const variantClasses = {
+  primary: "bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white",
+  secondary: "bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white",
+  outline: "bg-white border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50"
+};
+
+// Tamaños
+const sizeClasses = {
+  sm: "py-2 px-4 text-sm",
+  md: "py-3 px-6",
+  lg: "py-3 px-8 text-lg"
+};
+
+// Anchura completa
+const widthClass = fullWidth ? "w-full" : "";
+
+// Clase final
+const buttonClasses = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${widthClass} ${className}`;
+---
+
+{
+  href ? (
+    <a href={href} class={buttonClasses} data-astro-prefetch {...rest}>
+      <slot name="icon-left" />
+      <slot />
+      {icon && iconPosition === "right" && (
+        <slot name="icon-right">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+          </svg>
+        </slot>
+      )}
+    </a>
+  ) : (
+    <button type={type} class={buttonClasses} {...rest}>
+      {icon && iconPosition === "left" && (
+        <slot name="icon-left" />
+      )}
+      <slot />
+      {icon && iconPosition === "right" && (
+        <slot name="icon-right">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+          </svg>
+        </slot>
+      )}
+    </button>
+  )
+} 

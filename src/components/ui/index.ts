@@ -8,6 +8,7 @@ import CustomSelect from "./CustomSelect";
 import ConfirmDialog from "./ConfirmDialog";
 import Toast from "./Toast";
 import VpnNotice from "./VpnNotice";
+import ButtonReact from "./ButtonReact";
 
 export {
   RecipeDisplay,
@@ -19,4 +20,5 @@ export {
   ConfirmDialog,
   Toast,
   VpnNotice,
+  ButtonReact,
 };

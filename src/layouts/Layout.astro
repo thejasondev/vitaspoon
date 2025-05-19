@@ -5,6 +5,7 @@ import Footer from '../components/common/Footer.astro';
 import StructuredData from '../components/common/StructuredData.astro';
 import Analytics from '../components/seo/Analytics.astro';
 import { VpnNotice } from '../components/ui';
+import { ViewTransitions } from 'astro:transitions';
 
 interface Props {
 	title?: string;
@@ -64,6 +65,9 @@ const criticalResources = [
 		<link rel="canonical" href={canonicalURL} />
 		<meta name="generator" content={Astro.generator} />
 		
+		<!-- View Transitions para navegación fluida -->
+		<ViewTransitions fallback="swap" />
+		
 		<!-- Analytics and Site Verification -->
 		<Analytics />
 		
@@ -113,15 +117,63 @@ const criticalResources = [
 	</head>
 	<body class="min-h-screen flex flex-col bg-gray-50">
 		<Navbar />
-		<main class="flex-1">
+		<main 
+			class="flex-1 page-content" 
+			transition:animate="fade"
+		>
 			<slot />
 		</main>
 		<Footer />
-		<VpnNotice client:idle />
+		<VpnNotice client:idle transition:persist />
+		
+		<script>
+			// Función para manejar la transición de página y asegurar que el menú móvil se cierre
+			document.addEventListener('astro:before-preparation', () => {
+				// Cerrar el menú móvil si está abierto
+				const mobileMenu = document.getElementById('mobile-menu');
+				if (mobileMenu && !mobileMenu.classList.contains('translate-x-full')) {
+					// Restaurar el estado del scroll
+					document.body.style.overflow = '';
+					// Cerrar el menú
+					mobileMenu.classList.remove('translate-x-0');
+					mobileMenu.classList.add('translate-x-full');
+					
+					// Restaurar el botón hamburguesa
+					const bar1 = document.getElementById('bar1');
+					const bar2 = document.getElementById('bar2');
+					const bar3 = document.getElementById('bar3');
+					
+					if (bar1 && bar2 && bar3) {
+						bar1.style.transform = 'rotate(0)';
+						bar1.style.top = '20%';
+						bar1.style.marginTop = '0';
+						
+						bar2.style.opacity = '1';
+						
+						bar3.style.transform = 'rotate(0)';
+						bar3.style.bottom = '20%';
+						bar3.style.marginBottom = '0';
+					}
+				}
+			});
+			
+			// Configuración para componentes React que deben persistir
+			document.addEventListener('astro:page-load', () => {
+				// Asegurarnos de que los componentes React con client:idle y transition:persist
+				// mantengan su estado correctamente
+				const persistentComponents = document.querySelectorAll('[data-astro-transition-persist]');
+				persistentComponents.forEach(component => {
+					// Aseguramos que los componentes React persistentes no pierdan su estado
+					if (component.hasAttribute('data-react-component')) {
+						component.setAttribute('data-persist-state', 'true');
+					}
+				});
+			});
+		</script>
 	</body>
 </html>
 
-<style>
+<style is:global>
 	html,
 	body {
 		margin: 0;
@@ -135,5 +187,61 @@ const criticalResources = [
 			scroll-behavior: smooth;
 			-webkit-overflow-scrolling: touch;
 		}
+	}
+	
+	/* Animaciones personalizadas para las transiciones de página */
+	@keyframes page-fade-in {
+		from { opacity: 0; }
+		to { opacity: 1; }
+	}
+	
+	@keyframes page-fade-out {
+		from { opacity: 1; }
+		to { opacity: 0; }
+	}
+	
+	@keyframes slide-up {
+		from { opacity: 0; transform: translateY(20px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+	
+	@keyframes slide-down {
+		from { opacity: 0; transform: translateY(-20px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+	
+	/* Aplicar transiciones personalizadas a elementos específicos */
+	::view-transition-old(root) {
+		animation: 0.2s page-fade-out ease;
+	}
+	
+	::view-transition-new(root) {
+		animation: 0.3s page-fade-in ease;
+	}
+	
+	/* Animación para títulos principales */
+	h1, h2 {
+		view-transition-name: titles;
+	}
+	
+	::view-transition-old(titles) {
+		animation: 0.3s slide-up ease;
+	}
+	
+	::view-transition-new(titles) {
+		animation: 0.3s slide-down ease;
+	}
+	
+	/* Animación para imágenes principales */
+	.main-image {
+		view-transition-name: main-image;
+	}
+	
+	::view-transition-old(main-image) {
+		animation: 0.3s page-fade-out ease;
+	}
+	
+	::view-transition-new(main-image) {
+		animation: 0.5s page-fade-in ease;
 	}
 </style>

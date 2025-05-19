@@ -4,9 +4,12 @@ const navLinks = [
   { name: 'Recetas', href: '/recetas' },
   { name: 'Mis Recetas', href: '/mis-recetas' }
 ];
+
+// Mejorar la detección de la ruta activa
+const currentPath = Astro.url.pathname;
 ---
 
-<header class="fixed top-0 inset-x-0 bg-white shadow-md z-50 transition-transform duration-300" id="navbar">
+<header class="fixed top-0 inset-x-0 bg-white shadow-md z-50 transition-transform duration-300" id="navbar" transition:persist>
   <nav class="container mx-auto px-4 py-3 flex justify-between items-center">
     <a href="/" class="text-2xl font-bold hover:text-green-800 transition-colors flex items-center">
       <div class="flex items-center">
@@ -31,19 +34,23 @@ const navLinks = [
     </button>
     
     <!-- Menú desktop -->
-    <ul class="hidden md:flex space-x-6">
+    <ul class="hidden md:flex space-x-6" id="desktop-nav">
       {navLinks.map(link => {
-        const isActive = Astro.url.pathname === link.href || 
-                         (link.href !== '/' && Astro.url.pathname.startsWith(link.href));
+        const isActive = link.href === '/' 
+          ? currentPath === '/' 
+          : currentPath.startsWith(link.href);
+        
         return (
           <li>
             <a 
               href={link.href} 
               class:list={[
-                "text-gray-600 hover:text-green-600 transition-colors pb-1 border-b-2 font-medium",
-                isActive ? 'border-green-500 text-green-600' : 'border-transparent'
+                "text-gray-600 hover:text-green-600 transition-colors pb-1 border-b-2 font-medium nav-link",
+                isActive ? 'border-green-500 text-green-600 active' : 'border-transparent'
               ]}
               aria-current={isActive ? 'page' : undefined}
+              data-astro-prefetch
+              data-href={link.href}
             >
               {link.name}
             </a>
@@ -63,25 +70,29 @@ const navLinks = [
   >
     <div class="container mx-auto px-4 pt-20 pb-8 h-full flex flex-col">
       <div class="text-center mb-8">
-        <img src="/images/VitaSpoon.png" alt="VitaSpoon Logo" class="rounded-full w-24 h-24 mx-auto mb-2" />
+        <img src="/images/VitaSpoon.png" alt="VitaSpoon Logo" class="rounded-full w-24 h-24 mx-auto mb-2 main-image" />
         <h2 class="text-xl font-bold"><span class="text-green-800">Vita</span><span class="text-emerald-600">Spoon</span></h2>
         <p class="text-sm text-gray-500">Generador de recetas</p>
       </div>
-      <ul class="flex flex-col space-y-4 mt-4">
+      <ul class="flex flex-col space-y-4 mt-4" id="mobile-nav">
         {navLinks.map(link => {
-          const isActive = Astro.url.pathname === link.href || 
-                          (link.href !== '/' && Astro.url.pathname.startsWith(link.href));
+          const isActive = link.href === '/' 
+            ? currentPath === '/' 
+            : currentPath.startsWith(link.href);
+            
           return (
             <li class="border-b border-gray-100 pb-3">
               <a 
                 href={link.href} 
                 class:list={[
-                  "block px-3 py-3 text-lg font-medium transition-all duration-200 ease-in-out md:flex items-center",
+                  "block px-3 py-3 text-lg font-medium transition-all duration-200 ease-in-out md:flex items-center nav-link",
                   isActive 
-                    ? 'text-green-700 bg-green-50 rounded-lg' 
+                    ? 'text-green-700 bg-green-50 rounded-lg active' 
                     : 'text-gray-600 hover:text-green-700 hover:bg-green-50 hover:rounded-lg'
                 ]}
                 aria-current={isActive ? 'page' : undefined}
+                data-astro-prefetch
+                data-href={link.href}
               >
                 <span class="mr-3">
                   {link.name === 'Inicio' && (
@@ -118,8 +129,16 @@ const navLinks = [
 <div class="h-16"></div>
 
 <script>
-  // Script optimizado para el toggle del menú móvil
-  document.addEventListener('DOMContentLoaded', () => {
+  interface EventHandlers {
+    toggleMenu: () => void;
+    handleKeyDown: (e: KeyboardEvent) => void;
+    handleScroll: () => void;
+    updateActiveNavLinks: () => void;
+    updateNavLinks: (navContainer: HTMLElement | null) => void;
+  }
+
+  // Función para inicializar el menú móvil
+  function initMobileMenu() {
     // Seleccionar elementos una sola vez y guardarlos en variables
     const menuToggle = document.getElementById('menu-toggle');
     const mobileMenu = document.getElementById('mobile-menu');
@@ -130,6 +149,7 @@ const navLinks = [
     
     if (!menuToggle || !mobileMenu || !bar1 || !bar2 || !bar3 || !navbar) return;
     
+    // Estado global para el menú
     let isOpen = false;
     let lastScrollTop = 0;
     let scrollThrottleTimeout: number | null = null;
@@ -181,24 +201,36 @@ const navLinks = [
       }
     };
     
+    // Eliminar eventos previos para evitar duplicados
+    menuToggle.removeEventListener('click', toggleMenu);
+    
     // Toggle al hacer clic en el botón
     menuToggle.addEventListener('click', toggleMenu);
     
     // Cierra menú al hacer clic en un enlace
     const menuLinks = mobileMenu.querySelectorAll('a');
     menuLinks.forEach(link => {
-      link.addEventListener('click', () => {
+      // Crear una función de cierre específica para cada enlace
+      const handleLinkClick = () => {
         if (isOpen) toggleMenu();
-      });
+      };
+      
+      // Eliminar eventos previos específicos para este enlace
+      link.removeEventListener('click', handleLinkClick);
+      link.addEventListener('click', handleLinkClick);
     });
     
     // Cierra menú al presionar Escape
-    document.addEventListener('keydown', (e) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) toggleMenu();
-    });
+    };
+    
+    // Eliminar eventos previos para evitar duplicados
+    document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
     
     // Manejo del scroll para ocultar/mostrar la navbar con throttling
-    window.addEventListener('scroll', () => {
+    const handleScroll = () => {
       // No aplicar esto cuando el menú está abierto
       if (isOpen) return;
       
@@ -225,6 +257,88 @@ const navLinks = [
         lastScrollTop = scrollTop;
         scrollThrottleTimeout = null;
       }, 100); // 100ms throttle
-    }, { passive: true });
-  });
+    };
+    
+    // Eliminar eventos previos para evitar duplicados
+    window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    // Asegurarse de que el menú esté cerrado al inicio
+    if (mobileMenu.classList.contains('translate-x-0')) {
+      mobileMenu.classList.remove('translate-x-0');
+      mobileMenu.classList.add('translate-x-full');
+    }
+  }
+
+  // Inicializar el menú cuando el DOM esté listo
+  document.addEventListener('DOMContentLoaded', initMobileMenu);
+  
+  // Reinicializar el menú después de cada transición de página
+  document.addEventListener('astro:page-load', initMobileMenu);
+  
+  // Reinicializar también cuando se actualiza el DOM parcialmente
+  document.addEventListener('astro:after-swap', initMobileMenu);
+
+  // Función para actualizar la navegación activa en tiempo real
+  const updateActiveNavLinks: EventHandlers['updateActiveNavLinks'] = () => {
+    const currentPath = window.location.pathname;
+    
+    // Función para actualizar un conjunto de enlaces de navegación
+    const updateNavLinks: EventHandlers['updateNavLinks'] = (navContainer) => {
+      if (!navContainer) return;
+      
+      const navLinks = navContainer.querySelectorAll<HTMLAnchorElement>('.nav-link');
+      navLinks.forEach((link: HTMLAnchorElement) => {
+        const href = link.getAttribute('data-href');
+        
+        // Determinar si el enlace debe estar activo
+        const shouldBeActive = href === '/' 
+          ? currentPath === '/'
+          : currentPath.startsWith(href || '');
+          
+        // Aplicar o quitar las clases activas según corresponda
+        if (shouldBeActive) {
+          link.classList.add('active');
+          
+          // Aplicar estilos específicos según el tipo de menú
+          if (navContainer.id === 'desktop-nav') {
+            link.classList.add('border-green-500', 'text-green-600');
+            link.classList.remove('border-transparent');
+          } else if (navContainer.id === 'mobile-nav') {
+            link.classList.add('text-green-700', 'bg-green-50', 'rounded-lg');
+            link.classList.remove('text-gray-600');
+          }
+          
+          link.setAttribute('aria-current', 'page');
+        } else {
+          link.classList.remove('active');
+          
+          // Quitar estilos específicos según el tipo de menú
+          if (navContainer.id === 'desktop-nav') {
+            link.classList.remove('border-green-500', 'text-green-600');
+            link.classList.add('border-transparent');
+          } else if (navContainer.id === 'mobile-nav') {
+            link.classList.remove('text-green-700', 'bg-green-50', 'rounded-lg');
+            link.classList.add('text-gray-600');
+          }
+          
+          link.removeAttribute('aria-current');
+        }
+      });
+    };
+    
+    // Actualizar enlaces en el menú desktop y móvil
+    updateNavLinks(document.getElementById('desktop-nav'));
+    updateNavLinks(document.getElementById('mobile-nav'));
+  };
+
+  // Actualizar enlaces al cargar la página
+  document.addEventListener('DOMContentLoaded', updateActiveNavLinks);
+  
+  // Actualizar enlaces después de las transiciones de página
+  document.addEventListener('astro:page-load', updateActiveNavLinks);
+  document.addEventListener('astro:after-swap', updateActiveNavLinks);
+
+  // Para asegurar que también funcione si se usa el botón de atrás/adelante del navegador
+  window.addEventListener('popstate', updateActiveNavLinks);
 </script>

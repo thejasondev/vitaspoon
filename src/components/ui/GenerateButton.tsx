@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { GenerateButtonProps } from "../../types/recipe";
+import ButtonReact from "./ButtonReact";
 
 export default function GenerateButton({
   onClick,
@@ -9,23 +10,19 @@ export default function GenerateButton({
 
   return (
     <div className="relative w-full">
-      <button
+      <ButtonReact
         onClick={onClick}
         disabled={isLoading}
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
         onFocus={() => setShowTooltip(true)}
         onBlur={() => setShowTooltip(false)}
-        className={`
-          w-full py-4 px-6 rounded-lg text-xl font-bold text-white 
-          transition-all duration-300 transform hover:scale-105 
-          focus:outline-none focus:ring-4 focus:ring-green-300
-          ${
-            isLoading
-              ? "bg-green-400 cursor-wait"
-              : "bg-green-600 hover:bg-green-700 shadow-lg hover:shadow-xl"
-          }
-        `}
+        variant="primary"
+        size="lg"
+        fullWidth={true}
+        className={`py-4 text-xl font-bold focus:ring-4 focus:ring-green-300 ${
+          isLoading ? "opacity-80" : "hover:scale-105"
+        }`}
       >
         {isLoading ? (
           <div className="flex items-center justify-center space-x-2">
@@ -54,7 +51,7 @@ export default function GenerateButton({
         ) : (
           "¡A Cocinar!"
         )}
-      </button>
+      </ButtonReact>
 
       {/* Tooltip VPN */}
       {showTooltip && !isLoading && (

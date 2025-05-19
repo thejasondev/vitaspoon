@@ -124,7 +124,7 @@ function RecipeFormPageContent() {
     // Cerrar el diálogo
     closeDeleteConfirmation();
     // Mostrar notificación
-    showToast("Receta eliminada", "info");
+    showToast("Receta eliminada", "error");
   };
 
   // Comprobar si la receta actual está guardada
